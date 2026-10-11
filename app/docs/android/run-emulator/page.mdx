@@ -645,7 +645,11 @@ The same node in `tree.nodes` carries parsed bounds with a center point you can 
 
 ## Record the screen
 
-Recording runs on the instance and writes H.264 in an MP4 container. Start a recording, drive the UI, then stop it:
+Recording runs on the instance and writes H.264 in an MP4 container. Android's built-in pointer location overlay shows touch crosshairs, drag trails, and a coordinate bar by default. The overlay also appears in the live stream while recording. The previous pointer location setting is restored when recording ends.
+
+To omit the overlay, use `lim android record start --no-touch-indicators` or `client.startRecording({ touchIndicators: false })`.
+
+Start a recording, drive the UI, then stop it:
 
 <CodeGroup labels={["CLI","TypeScript"]}>
 ```bash
