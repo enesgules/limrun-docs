@@ -6,7 +6,7 @@ icon: "network"
 ---
 # Connect an Android emulator to local services
 
-`lim android tunnel` sends the connections you declare from the emulator through the machine that runs the tunnel, so the app keeps using the addresses it already has. This page covers Android emulators; the selector and inspection rules are shared with iOS and described once in [Connect an iOS simulator to local services](/docs/ios/local-services). To route instances through one long-running connector in your network, whichever machine creates them, use a [persistent tunnel](/docs/networking/persistent-tunnels) instead.
+`lim android tunnel` sends the connections you declare from the emulator through the machine that runs the tunnel, so the app keeps using the addresses it already has. This page covers Android emulators; the selector and inspection rules are shared with iOS and described once in [Connect an iOS simulator to local services](/docs/ios/local-services). To route instances through one long-running connector in your network, whichever machine creates them, use a [private tunnel](/docs/networking/private-tunnels) instead.
 
 ## Start a tunnel
 
@@ -42,7 +42,7 @@ TypeScript only: start the tunnel on a device client that was opened with the in
 
 ## Choose selectors
 
-Selectors take the same forms as on iOS: `localhost:port`, `IPv4:port`, `[IPv6]:port`, an exact domain, or a `*.` wildcard domain. The domain rules, the caps of ten exact selectors and 64 domain selectors, and the port 53 exclusion are described in [Choose selectors](/docs/ios/local-services#choose-selectors) and [Limits and behavior](/docs/ios/local-services#limits-and-behavior).
+Selectors take the same forms as on iOS: `localhost:port`, `IPv4:port`, `[IPv6]:port`, an exact domain, or a `*.` wildcard domain. The domain rules, the caps of ten exact selectors and 64 domain selectors, and the port 53 exclusion are described in [Choose selectors](/docs/networking/private-tunnels#choose-selectors) and [Limits and behavior](/docs/ios/local-services#limits-and-behavior).
 
 Two rules differ on Android:
 

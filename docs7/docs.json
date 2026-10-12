@@ -77,7 +77,7 @@
         "group": "Networking",
         "icon": "network",
         "pages": [
-          "networking/persistent-tunnels",
+          "networking/private-tunnels",
           "networking/egress-ip-addresses"
         ]
       },
