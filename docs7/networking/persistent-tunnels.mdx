@@ -103,7 +103,7 @@ curl -X POST "https://api.limrun.com/v1/android_instances?wait=true" \
 ```
 </CodeGroup>
 
-The Python and Go SDKs do not expose `tunnel`; send the REST request from those languages.
+The Python and Go SDKs do not expose `tunnel`; send the REST request from those languages. Agents on the [remote MCP server](/agents/remote-mcp) pass `tunnel` to `create-ios-simulator` and `create-android-emulator`.
 
 Creation checks the tunnel first and fails when it does not exist or no connector holds it. The instance becomes ready, and its initial apps install, only after the tunnel attaches. If the tunnel does not attach within 30 seconds, creation fails and Limrun deletes the instance. Once the instance is ready, the app reaches each selector at the address you declared, as on a destination tunnel.
 

@@ -51,7 +51,7 @@ The server exposes 16 tools in five groups.
 
 | Tool | What it does |
 |---|---|
-| `create-ios-simulator` | Creates a simulator, blocks until it is ready, and returns the instance ID. Optional `apps` pre-installs apps by asset name or public URL, optional `inactivityTimeout` overrides the organization default, and optional `idempotencyKey` makes retries return the same instance. |
+| `create-ios-simulator` | Creates a simulator, blocks until it is ready, and returns the instance ID. Optional `apps` pre-installs apps by asset name or public URL, optional `inactivityTimeout` overrides the organization default, optional `idempotencyKey` makes retries return the same instance, and optional `tunnel` names a [persistent tunnel](/networking/persistent-tunnels) so the app reaches services in your private network. |
 | `create-android-emulator` | Same contract for Android emulators. `apps` entries are asset names or public APK URLs. |
 | `list-instances` | Lists the organization's running iOS simulators and Android emulators with their IDs and states. Xcode and Gradle sandboxes are not listed. |
 | `get-instance-status` | Returns the state and error message for one instance ID. |
