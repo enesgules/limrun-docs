@@ -6,7 +6,7 @@ icon: "network"
 ---
 # Connect an iOS simulator to local services
 
-A destination tunnel sends the connections you declare from the simulator through the machine that runs the tunnel, so the app keeps using the addresses it already has, such as `localhost:8000` or `api.corp.example`. This page covers iOS simulators; for Android emulators, see [Connect an Android emulator to local services](/docs/android/local-services), which reuses the selector and inspection rules described here. To route instances through one long-running connector in your network, whichever machine creates them, use a [private tunnel](/docs/networking/private-tunnels) instead.
+A destination tunnel sends the connections you declare from the simulator through the machine that runs the tunnel, so the app keeps using the addresses it already has, such as `localhost:8000` or `api.corp.example`. This page covers iOS simulators; for Android emulators, see [Connect an Android emulator to local services](/docs/android/local-services), which reuses the inspection rules described here. To route instances through one long-running connector in your network, whichever machine creates them, use a [private tunnel](/docs/networking/private-tunnels) instead.
 
 <Note>
   This page covers traffic from the device to your service. Reaching a server that runs *inside* the device from outside, such as WebDriverAgent, is the opposite direction and uses `targetHttpPortUrlPrefix`. See [Appium](/docs/testing/appium) for how that works.
@@ -50,12 +50,7 @@ The Python and Go SDKs do not start destination tunnels. Raw HTTP cannot start o
 
 ## Choose selectors
 
-A selector is either an exact TCP destination or a domain:
-
-- **Exact `host:port`.** `localhost:8000` also captures the loopback aliases `127.0.0.1:8000`, `[::1]:8000`, and `[::ffff:127.0.0.1]:8000`. Literal IP selectors work the same way for non-loopback addresses. Write IPv6 in brackets, as in `[::1]:8000`.
-- **Domain.** An exact name (`api.corp.example`) or a `*.` wildcard (`*.staging.example`). Domain selectors are intercepted on the instance and dialed from your machine whether or not the name resolves on public DNS, so your DNS, `/etc/hosts`, and VPN apply. Wildcards are label-bound: `*.staging.example` covers `a.staging.example` but not `staging.example`. `localhost` and IP literals are not domains; declare them as `host:port`.
-
-Apps that resolve DNS themselves over HTTPS (DoH) bypass domain interception. For those, declare the resolved IP instead.
+Selectors take the same forms on destination tunnels and private tunnels; see [Choose selectors](/docs/networking/private-tunnels#choose-selectors). On a destination tunnel they resolve on the machine that runs `lim ios tunnel`, so your DNS, `/etc/hosts`, and VPN apply.
 
 ## Limits and behavior
 
