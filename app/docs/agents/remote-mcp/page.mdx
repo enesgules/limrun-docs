@@ -10,7 +10,7 @@ icon: "plug"
 
 - **One endpoint, signed in with your Limrun account.** OAuth is the default: the client opens a browser, you approve access, and tokens refresh on their own afterwards. For headless setups, an API key in an `Authorization: Bearer` header works too.
 - **Stateless.** Every tool that touches a device takes an explicit `instanceId`, so there is no session to lose. Reconnects and long gaps are fine.
-- **Instances only.** An OAuth connection can create, inspect, drive, and delete instances and list your app assets. It cannot reach billing or the rest of the API. Builds and file uploads stay on the [`lim` CLI](/docs/agents/cli).
+- **Instances only.** An OAuth connection can create, inspect, drive, and delete instances, list your app assets, and read your [persistent tunnels](/docs/networking/persistent-tunnels) so it can name one at create time. It cannot reach billing or the rest of the API. Builds and file uploads stay on the [`lim` CLI](/docs/agents/cli).
 
 ## Choose the remote or per-instance server
 
