@@ -17,12 +17,10 @@ Organization admins create tunnels in the console:
 
 1. Open **Network** and select **New tunnel**.
 2. Enter a **Name**. Instances refer to the tunnel by this name, and it cannot be changed later. Use lowercase letters, digits, and dashes, at most 63 characters, starting and ending with a letter or digit.
-3. Under **Selectors**, enter the destinations instances reach through the connector, one per line. Selectors take the same forms as on a destination tunnel; see [Choose selectors](/ios/local-services#choose-selectors).
+3. Under **Selectors**, enter the destinations instances reach through the connector, one per line; see [Choose selectors](#choose-selectors).
 4. Choose when the token expires under **Token expires in**, then select **Create tunnel**.
 
 The dialog then shows the connector command, `lim tunnel run --token <token>`. Copy it before you close the dialog: Limrun does not store the token, so this is the only time it is shown. Keep the dialog open while you start the connector; its status changes from **Waiting for the connector...** to **Connected**.
-
-Selectors resolve on the connector's machine. `localhost:3000` reaches port 3000 on the machine that runs the connector, and a domain resolves through that machine's DNS, `/etc/hosts`, and VPN.
 
 <AccordionGroup>
 
@@ -39,6 +37,19 @@ The command prints the connector command, `lim tunnel run --token <token>`, the 
 </Accordion>
 
 </AccordionGroup>
+
+## Choose selectors
+
+Selectors are the destinations a tunnel carries. They take the same forms on private tunnels and on [destination tunnels](/ios/local-services), and they resolve on the machine that runs the tunnel: the connector's machine for a private tunnel, or the machine running `lim ios tunnel` or `lim android tunnel` for a destination tunnel. `localhost:3000` reaches port 3000 on that machine.
+
+A selector is either an exact TCP destination or a domain:
+
+- **Exact `host:port`.** `localhost:8000` also captures the loopback aliases `127.0.0.1:8000`, `[::1]:8000`, and `[::ffff:127.0.0.1]:8000`. Literal IP selectors work the same way for non-loopback addresses. Write IPv6 in brackets, as in `[::1]:8000`.
+- **Domain.** An exact name (`api.corp.example`) or a `*.` wildcard (`*.staging.example`). Domain selectors are intercepted on the instance and dialed from the machine that runs the tunnel whether or not the name resolves on public DNS, so that machine's DNS, `/etc/hosts`, and VPN apply. Wildcards are label-bound: `*.staging.example` covers `a.staging.example` but not `staging.example`. `localhost` and IP literals are not domains; declare them as `host:port`.
+
+Apps that resolve DNS themselves over HTTPS (DoH) bypass domain interception. For those, declare the resolved IP instead.
+
+Android emulators add two rules for exact selectors; see [Choose selectors on Android](/android/local-services#choose-selectors).
 
 ## Run the connector
 
