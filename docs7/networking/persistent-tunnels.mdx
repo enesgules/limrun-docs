@@ -24,6 +24,10 @@ The dialog then shows the connector command, `lim tunnel run --token <token>`. C
 
 Selectors resolve on the connector's machine. `localhost:3000` reaches port 3000 on the machine that runs the connector, and a domain resolves through that machine's DNS, `/etc/hosts`, and VPN.
 
+<AccordionGroup>
+
+<Accordion title="Alternatively, create a tunnel from the CLI" id="create-from-the-cli">
+
 From a terminal or a pipeline, create the tunnel with `lim tunnel create`:
 
 ```bash
@@ -31,6 +35,10 @@ lim tunnel create staging --selector localhost:3000 --selector "*.internal.examp
 ```
 
 The command prints the connector command, `lim tunnel run --token <token>`, the only time the token is shown. `--expiration-months` sets the token's lifetime, from 1 to 60 months (default 12), and `--quiet` prints only the token, for example to store it as a CI secret. `lim tunnel list` shows each tunnel with its connector, selectors, and token expiry; add `--json` for tunnel IDs.
+
+</Accordion>
+
+</AccordionGroup>
 
 ## Run the connector
 
