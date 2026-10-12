@@ -10,7 +10,7 @@ icon: "plug"
 
 - **One endpoint, signed in with your Limrun account.** OAuth is the default: the client opens a browser, you approve access, and tokens refresh on their own afterwards. For headless setups, an API key in an `Authorization: Bearer` header works too.
 - **Stateless.** Every tool that touches a device takes an explicit `instanceId`, so there is no session to lose. Reconnects and long gaps are fine.
-- **Instances only.** An OAuth connection can create, inspect, drive, and delete instances, list your app assets, and read your [persistent tunnels](/docs/networking/persistent-tunnels) so it can name one at create time. It cannot reach billing or the rest of the API. Builds and file uploads stay on the [`lim` CLI](/docs/agents/cli).
+- **Instances only.** An OAuth connection can create, inspect, drive, and delete instances, list your app assets, and read your [private tunnels](/docs/networking/private-tunnels) so it can name one at create time. It cannot reach billing or the rest of the API. Builds and file uploads stay on the [`lim` CLI](/docs/agents/cli).
 
 ## Choose the remote or per-instance server
 
@@ -51,7 +51,7 @@ The server exposes 16 tools in five groups.
 
 | Tool | What it does |
 |---|---|
-| `create-ios-simulator` | Creates a simulator, blocks until it is ready, and returns the instance ID. Optional `apps` pre-installs apps by asset name or public URL, optional `inactivityTimeout` overrides the organization default, optional `idempotencyKey` makes retries return the same instance, and optional `tunnel` names a [persistent tunnel](/docs/networking/persistent-tunnels) so the app reaches services in your private network. |
+| `create-ios-simulator` | Creates a simulator, blocks until it is ready, and returns the instance ID. Optional `apps` pre-installs apps by asset name or public URL, optional `inactivityTimeout` overrides the organization default, optional `idempotencyKey` makes retries return the same instance, and optional `tunnel` names a [private tunnel](/docs/networking/private-tunnels) so the app reaches services in your private network. |
 | `create-android-emulator` | Same contract for Android emulators. `apps` entries are asset names or public APK URLs. |
 | `list-instances` | Lists the organization's running iOS simulators and Android emulators with their IDs and states. Xcode and Gradle sandboxes are not listed. |
 | `get-instance-status` | Returns the state and error message for one instance ID. |

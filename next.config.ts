@@ -73,6 +73,7 @@ const movedPages: Record<string, string> = {
   "/docs/ios/test-with-xctest": "/docs/testing/xctest",
   "/docs/ios/pr-previews": "/docs/ci/pr-previews",
   "/docs/reference/egress-ip-addresses": "/docs/networking/egress-ip-addresses",
+  "/docs/networking/persistent-tunnels": "/docs/networking/private-tunnels",
   "/docs/tutorials": "/docs/guides",
   "/docs/tutorials/ios-bazel-claude-code-web": "/docs/guides/ios-bazel-claude-code-web",
 };
