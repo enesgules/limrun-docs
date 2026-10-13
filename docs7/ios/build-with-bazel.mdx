@@ -8,6 +8,10 @@ icon: "zap"
 
 If your iOS app builds with Bazel (`rules_apple`, `rules_swift`), point it at Limrun's remote build execution (RBE) backend instead of syncing sources. Bazel keeps running on your laptop or CI runner, and every Apple action (Swift compilation, asset catalogs, codesigning, bundling) runs on Limrun's Macs. Linux, Windows, and macOS clients all work, and none of them needs Xcode.
 
+<Note>
+To build a workspace's iOS and Android targets on Limrun's shared build plane, with one cache across your organization, use [`lim bazel setup`](/bazel/build-on-limrun) instead. This page covers `lim xcode rbe`, which runs the remote execution stack on a dedicated Xcode sandbox and adds simulator installs and asset uploads.
+</Note>
+
 The loop has three steps:
 
 1. **Start the RBE endpoint** with `lim xcode rbe`. It provisions an Xcode sandbox, starts the remote execution stack on it, and bridges it to a local port.
