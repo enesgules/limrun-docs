@@ -55,6 +55,13 @@
         ]
       },
       {
+        "group": "Bazel",
+        "icon": "boxes",
+        "pages": [
+          "bazel/build-on-limrun"
+        ]
+      },
+      {
         "group": "Testing",
         "icon": "flask-conical",
         "pages": [
