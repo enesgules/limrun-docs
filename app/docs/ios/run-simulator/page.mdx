@@ -244,11 +244,30 @@ shot, err := client.Screenshot(ctx)             // shot.Base64, shot.Width, shot
 
 </CodeGroup>
 
-Screenshots are JPEG images. Their dimensions are in points, the same coordinate space as `tap(x, y)`. To tap a coordinate from a scaled screenshot in TypeScript, pass the screenshot's size so the server converts it:
+By default, screenshots are JPEG images. Their dimensions are in points, the same coordinate space as `tap(x, y)`. To tap a coordinate from a scaled screenshot in TypeScript, pass the screenshot's size so the server converts it:
 
 ```ts
 await client.tapWithScreenSize(x, y, screenshotWidth, screenshotHeight);
 ```
+
+Choose `format` and `size` independently. `format` accepts `jpeg` or `png` and defaults to `jpeg`. `size` accepts `scaled` or `full` and defaults to `scaled`. `scaled` uses point dimensions; `full` preserves native pixel resolution. PNG images have no alpha channel.
+
+For a full-resolution PNG:
+
+<CodeGroup labels={["CLI","TypeScript"]}>
+```bash
+lim ios screenshot app-store.png --format png --size full
+```
+
+```ts
+import { promises as fs } from 'node:fs';
+
+const shot = await client.screenshot({ format: 'png', size: 'full' });
+await fs.writeFile('app-store.png', Buffer.from(shot.base64, 'base64'));
+```
+</CodeGroup>
+
+Duo callers can use `screenshotDisplay('inner', { format: 'png', size: 'full' })` or CLI `--display inner --format png --size full`. Tap coordinates remain in points; use `tapWithScreenSize` when working from native pixel coordinates.
 
 ## Tap an element
 
