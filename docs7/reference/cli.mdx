@@ -182,8 +182,8 @@ The Guide column links to the page that explains a command in context. Commands 
 | `lim xcode get` | Get details for a specific Xcode instance |  |
 | `lim xcode list` | List Xcode instances | [PR previews](/ci/pr-previews#clean-up-when-a-pr-closes) |
 | `lim xcode logs` | Fetch logs for an active, recent, or specific Xcode build | [Build logs and webhooks](/ci/build-logs-and-webhooks#read-build-logs) |
-| `lim xcode rbe` | Serve a local Bazel remote-execution endpoint backed by a Limrun Xcode instance | [Build with Bazel](/ios/build-with-bazel) |
-| `lim xcode rbe upload` | Upload the latest successful remote build as an asset | [Build with Bazel](/ios/build-with-bazel#upload-builds-as-assets) |
+| `lim xcode rbe` | Legacy: serve a local Bazel remote-execution endpoint backed by a Limrun Xcode instance. Use `lim bazel setup` for new workspaces | [Build with Bazel (legacy)](/ios/build-with-bazel) |
+| `lim xcode rbe upload` | Legacy: upload the latest successful `lim xcode rbe` build as an asset | [Build with Bazel (legacy)](/ios/build-with-bazel#upload-builds-as-assets) |
 | `lim xcode run` | Run a command on a xcode sandbox | [Build with Xcode](/ios/build-with-xcode#run-project-commands) |
 | `lim xcode set-instance` | Set the Xcode instance targeted by subsequent commands | [Sandboxed agents](/agents/sandboxed-agents#point-the-sandboxed-cli-at-the-instance) |
 | `lim xcode sync` | Continuously sync local source code to an Xcode sandbox | [Build with Xcode](/ios/build-with-xcode#sync-your-source) |
