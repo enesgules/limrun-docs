@@ -1,6 +1,6 @@
 ---
-title: "Build with Bazel"
-description: "Build a Bazel iOS workspace from any machine without a local Xcode install, then run or share the app."
+title: "Build with Bazel (legacy)"
+description: "The legacy `lim xcode rbe` path: build a Bazel iOS workspace on a dedicated Xcode sandbox, then run or share the app."
 icon: "zap"
 ---
 
@@ -8,9 +8,9 @@ icon: "zap"
 
 If your iOS app builds with Bazel (`rules_apple`, `rules_swift`), point it at Limrun's remote build execution (RBE) backend instead of syncing sources. Bazel keeps running on your laptop or CI runner, and every Apple action (Swift compilation, asset catalogs, codesigning, bundling) runs on Limrun's Macs. Linux, Windows, and macOS clients all work, and none of them needs Xcode.
 
-<Note>
-To build a workspace's iOS and Android targets on Limrun's shared build plane, with one cache across your organization, use [`lim bazel setup`](/bazel/build-on-limrun) instead. This page covers `lim xcode rbe`, which runs the remote execution stack on a dedicated Xcode sandbox and adds simulator installs and asset uploads.
-</Note>
+<Warning>
+`lim xcode rbe` is the legacy way to build with Bazel on Limrun. For new workspaces, use [`lim bazel setup`](/bazel/build-on-limrun): it builds iOS and Android targets on Limrun's build plane, needs no sandbox or tunnel, and shares one cache across your organization. This page stays for existing `lim xcode rbe` setups and for the flows that still need it: attaching a simulator to the build sandbox and uploading builds as assets.
+</Warning>
 
 The loop has three steps:
 
