@@ -167,7 +167,7 @@ The reverse tunnel has these constraints:
 | `lim ios reverse` fails with `already in use` | A live reverse tunnel holds that port. | Pick another port from 57090 to 57099, or stop the other tunnel. |
 | The app ignores the tunnel | The app opened its connections before the tunnel was ready. | Start the tunnel first, then relaunch the app. |
 | An app with certificate pinning fails through the tunnel | Inspection decodes HTTPS with a certificate the pinning app rejects. | Leave that host out of the selectors, or pass `--no-inspect`. |
-| Requests through a [device proxy](/docs/ios/run-simulator#send-traffic-through-your-proxy) fail or hang | Inspection decodes the traffic itself, so requests addressed to the proxy arrive rewritten and HTTPS connections stall. | Start the tunnel with `--no-inspect`. |
+| Requests through a [device proxy](/docs/ios/run-simulator#send-traffic-through-your-proxy) fail or hang | The instance was created before tunnel inspection passed proxy requests through, so it rewrites them. | Create a new instance, or start the tunnel with `--no-inspect`. |
 
 ## Next steps
 

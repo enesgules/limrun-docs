@@ -855,16 +855,16 @@ await client.simctl(['spawn', 'booted', 'notifyutil', '-p', 'com.apple.Biometric
 
 Point the simulator's system proxy at an HTTP proxy, such as a proxy that records traffic or one your network requires. Safari, apps, and the simulator's own services then open new HTTP and HTTPS connections through it. Requests to `localhost` stay direct, so local servers and tunnels to them keep working.
 
-The simulator reaches the proxy through a tunnel, which lets the proxy run on your machine or anywhere in your network. Start the tunnel with `--no-inspect`, because tunnel inspection decodes the traffic itself and breaks requests addressed to a proxy. `lim ios proxy` needs `lim` 0.45.0 or later. For a proxy on your machine at port 3128:
+The simulator reaches the proxy through a tunnel, which lets the proxy run on your machine or anywhere in your network. Tunnel inspection passes requests meant for a proxy through as the device sent them, so the proxy sees and decodes the traffic itself. `lim ios proxy` needs `lim` 0.45.0 or later. For a proxy on your machine at port 3128:
 
 <CodeGroup labels={["CLI","TypeScript"]}>
 ```bash
-lim ios tunnel --selector localhost:3128 --no-inspect --detach
+lim ios tunnel --selector localhost:3128 --detach
 lim ios proxy set localhost:3128
 ```
 
 ```ts
-await client.startTunnel({ selectors: ['localhost:3128'], inspection: { enabled: false } });
+await client.startTunnel({ selectors: ['localhost:3128'] });
 await client.simctl(['spawn', 'booted', 'limproxy', 'set', 'localhost', '3128']).wait();
 ```
 

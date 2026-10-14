@@ -175,11 +175,11 @@ From the API, create the tunnel with `"ephemeral": true` and a `token`, then run
 
 A tunnel carries only the destinations you declare, and it has no catch-all selector. To send all of a device's traffic out through your network, for example through a proxy that records it, declare the proxy as the one destination and point the device's system proxy at it. Traffic that follows the system proxy then leaves through the proxy, while apps that ignore the system proxy still go direct.
 
-Create the tunnel with the proxy as its selector, and run the connector with `--no-inspect`, because tunnel inspection decodes the traffic itself and breaks requests addressed to a proxy. For a proxy on the connector's machine at port 3128:
+Create the tunnel with the proxy as its selector and run its connector. Tunnel inspection passes requests meant for a proxy through as the device sent them, so the proxy sees and decodes the traffic itself. For a proxy on the connector's machine at port 3128:
 
 ```bash
 lim tunnel create device-proxy --selector localhost:3128
-lim tunnel run --token <token> --no-inspect
+lim tunnel run --token <token>
 ```
 
 Then create each instance with the tunnel and set its proxy:
