@@ -2,7 +2,7 @@
   "$schema": "https://schemas.agentskills.io/discovery/0.2.0/schema.json",
   "source": {
     "repository": "https://github.com/limrun-inc/skills",
-    "commit": "e6878a82f6227c99f4e7a34142d5aad5c541cf97"
+    "commit": "099d8d8bcccecaec0c0d2cfe78896ed0e1da19f0"
   },
   "skills": [
     {
@@ -10,14 +10,14 @@
       "type": "skill-md",
       "description": "Build an iOS / Apple app on remote Xcode with `lim xcode build` instead of local xcodebuild, run project commands with `lim xcode run`, or run its XCTest suites with `lim xcode test`, from any environment (Linux, Windows, macOS, VM, container). Use for non-Bazel projects (an `.xcodeproj` / `.xcworkspace`, an XcodeGen `project.yml` with a gitignored project, React Native / Expo native build) when the user wants to build, compile, run code generation or Make targets, test, inspect build logs, reload, produce a preview build, or ship a signed device IPA. To run, tap, screenshot, or otherwise interact with the result on a simulator, use limrun-ios-simulator. For Bazel workspaces, use limrun-xcode-bazel.",
       "url": "/.well-known/agent-skills/limrun-xcode/SKILL.md",
-      "digest": "sha256:1c9882588fb48d039009d9db2840cd3b745b78f2e8d24c442a47da0ecf7ec3e7"
+      "digest": "sha256:e122a54e02429c7ee36e24de00174469afaf2ad882a21411886f8febb13628ea"
     },
     {
       "name": "limrun-ios-simulator",
       "type": "skill-md",
-      "description": "Drive an app running on a Limrun cloud iOS simulator: launch, tap, type, read the accessibility element tree, read app logs and simulator syslog, screenshot, record video, connect the app to local services or a private tunnel, play a video file as the camera, set the clipboard, read and write user defaults, post notifications, and run timed action chains. Use after a build (from any builder) when the user wants to see, test, or interact with their app on a simulator, or says 'show me a screenshot', 'tap', 'run the UI test', 'record a video', 'read the logs', 'connect localhost', 'reach my local server from the simulator', 'mock the camera', 'paste into the app', 'change the language', 'simulate Face ID', or 'launch on simulator'. To build the app first, use limrun-xcode-bazel (Bazel workspaces) or limrun-xcode (xcodebuild projects).",
+      "description": "Drive an app running on a Limrun cloud iOS simulator: launch, tap, type, read the accessibility element tree, read app logs and simulator syslog, screenshot, record video, connect the app to local services or a private tunnel, play a video file as the camera, send all traffic through the user's proxy and trust its CA, set the clipboard, read and write user defaults, post notifications, and run timed action chains. Use after a build (from any builder) when the user wants to see, test, or interact with their app on a simulator, or says 'show me a screenshot', 'tap', 'run the UI test', 'record a video', 'read the logs', 'connect localhost', 'reach my local server from the simulator', 'route all traffic through my proxy', 'trust my CA', 'mock the camera', 'paste into the app', 'change the language', 'simulate Face ID', or 'launch on simulator'. To build the app first, use limrun-xcode-bazel (Bazel workspaces) or limrun-xcode (xcodebuild projects).",
       "url": "/.well-known/agent-skills/limrun-ios-simulator/SKILL.md",
-      "digest": "sha256:cef27e565d1b2d27b9165b511f30ed7dd580562b88fd667054775b94c4dd490e"
+      "digest": "sha256:4410c12b6363e0c8ae282b85f5d7541a0ea3c792abc1b98394e7ac87f8011d3b"
     },
     {
       "name": "limrun-expo-development",
@@ -43,9 +43,16 @@
     {
       "name": "limrun-xcode-bazel",
       "type": "skill-md",
-      "description": "Build a Bazel-based iOS / macOS / Apple app on Limrun's remote build execution (RBE) instead of a local Mac, and install it on a remote iOS simulator. Use when the project is a Bazel workspace (MODULE.bazel / WORKSPACE) building rules_apple / rules_swift targets and the user wants to `bazel build` it or run it on a simulator, or when a `--config=limrun` build or install misbehaves. To then tap, type, screenshot, or otherwise interact with the running app, use limrun-ios-simulator. For non-Bazel (plain xcodebuild) projects use limrun-xcode instead.",
+      "description": "Legacy: build a Bazel iOS app with `lim xcode rbe` on a dedicated Xcode sandbox and install it on a remote iOS simulator attached to that sandbox. Use only when the workspace already runs on `lim xcode rbe` (its `.limrun/` came from `lim xcode rbe`) or the user explicitly asks for it, or when a `lim xcode rbe` build, upload, or install misbehaves. For every other Bazel build, including new workspaces, iOS or Android, and running the app on a simulator, use limrun-bazel. To tap, type, screenshot, or otherwise interact with the running app, use limrun-ios-simulator.",
       "url": "/.well-known/agent-skills/limrun-xcode-bazel/SKILL.md",
-      "digest": "sha256:a2ba5b3baf8376b0fa9dde891da0ecdeb0ed6ade994edccaa74af80f74fac2a0"
+      "digest": "sha256:25a01aff5b9f14c603932b605f5940e3610352e776deaa8684c859c0cd37e810"
+    },
+    {
+      "name": "limrun-bazel",
+      "type": "skill-md",
+      "description": "The default way to build any Bazel workspace on Limrun: build its iOS and Android targets on Limrun's shared build plane with `lim bazel setup` and `bazel build --config=limrun`, from any environment (Linux, Windows, macOS, VM, container, CI), with one remote cache shared across the organization. Use when the project is a Bazel workspace (MODULE.bazel) with rules_apple or rules_android and the user wants to build it remotely, run the built app on a Limrun simulator or emulator, set up Bazel remote execution in CI, or fix a `--config=limrun` build that fails on authentication, workers, or missing MODULE.bazel lines. limrun-xcode-bazel covers only the legacy `lim xcode rbe` flow; use it only when the workspace already runs on `lim xcode rbe` or the user asks for it. For non-Bazel Android builds, use limrun-gradle.",
+      "url": "/.well-known/agent-skills/limrun-bazel/SKILL.md",
+      "digest": "sha256:da99f6c5efaf6960efbca959d01edcd55723c816f7208773f990b180acfb67c4"
     },
     {
       "name": "limrun-gradle",
@@ -57,9 +64,9 @@
     {
       "name": "limrun-android-emulator",
       "type": "skill-md",
-      "description": "Drive an app running on a Limrun cloud Android emulator: install an APK, launch and terminate apps with crash reports, tap, type, read the UI element tree, screenshot, record video, inject microphone audio, shape network bandwidth, read app logs, run shell commands, transfer files, tunnel the app's network destinations through your machine with HTTP inspection and HAR capture, reach a private network through a private tunnel, trust a custom CA certificate, and use adb over the CLI's tunnel for full logcat and interactive tools. Use after a build (from limrun-gradle or any builder) when the user wants to see, test, or interact with their app on an emulator, or says 'show me a screenshot', 'tap', 'run it on the emulator', 'check logcat', 'record a video', 'inspect network traffic', or 'reach my local server from the emulator'. To build the APK or AAB first, use limrun-gradle.",
+      "description": "Drive an app running on a Limrun cloud Android emulator: install an APK, launch and terminate apps with crash reports, tap, type, read the UI element tree, screenshot, record video, inject microphone audio, shape network bandwidth, read app logs, run shell commands, transfer files, tunnel the app's network destinations through your machine with HTTP inspection and HAR capture, reach a private network through a private tunnel, send all traffic through the user's proxy, trust a custom CA certificate, and use adb over the CLI's tunnel for full logcat and interactive tools. Use after a build (from limrun-gradle or any builder) when the user wants to see, test, or interact with their app on an emulator, or says 'show me a screenshot', 'tap', 'run it on the emulator', 'check logcat', 'record a video', 'inspect network traffic', 'route all traffic through my proxy', or 'reach my local server from the emulator'. To build the APK or AAB first, use limrun-gradle.",
       "url": "/.well-known/agent-skills/limrun-android-emulator/SKILL.md",
-      "digest": "sha256:76bddf43ca1af67798c536a89448e21d800503e5c253d1fc9a13ca753538f059"
+      "digest": "sha256:ff428b0a5df78bc38cc6f3fc3fe6ea5001382bcd9c2ec313eb6e242aba27ad92"
     }
   ]
 }
