@@ -852,6 +852,52 @@ await client.simctl(['spawn', 'booted', 'notifyutil', '-p', 'com.apple.Biometric
 
 </CodeGroup>
 
+## Send traffic through your proxy
+
+Point the simulator's system proxy at an HTTP proxy, such as a proxy that records traffic or one your network requires. Safari, apps, and the simulator's own services then open new HTTP and HTTPS connections through it. Requests to `localhost` stay direct, so local servers and tunnels to them keep working.
+
+The simulator reaches the proxy through a tunnel, which lets the proxy run on your machine or anywhere in your network. Tunnel inspection passes requests meant for a proxy through as the device sent them, so the proxy sees and decodes the traffic itself. `lim ios proxy` needs `lim` 0.45.0 or later. For a proxy on your machine at port 3128:
+
+<CodeGroup>
+```bash CLI
+lim ios tunnel --selector localhost:3128 --detach
+lim ios proxy set localhost:3128
+```
+
+```ts TypeScript
+await client.startTunnel({ selectors: ['localhost:3128'] });
+await client.simctl(['spawn', 'booted', 'limproxy', 'set', 'localhost', '3128']).wait();
+```
+
+</CodeGroup>
+
+For a proxy elsewhere in your network, declare its name as the selector, for example `--selector proxy.example.internal`, and set the proxy to `proxy.example.internal:3128`. A [private tunnel](/networking/private-tunnels#send-all-device-traffic-through-a-proxy) carries the proxy the same way for every instance that names it.
+
+New connections use the proxy as soon as you set it, while connections an app opened before keep their old route until you relaunch the app. To go direct again, clear the proxy before you stop the tunnel:
+
+```bash
+lim ios proxy clear
+```
+
+`lim ios proxy clear` restores the settings that `lim ios proxy set` replaced. To read HTTPS traffic in the proxy, also [trust its CA](#trust-a-ca-certificate).
+
+## Trust a CA certificate
+
+Add a CA certificate to the simulator's trusted roots, such as the CA of a proxy that records HTTPS traffic. The file holds one PEM-encoded CA certificate, and anything else is rejected:
+
+<CodeGroup>
+```bash CLI
+lim ios ca add ./proxy-ca.pem
+```
+
+```ts TypeScript
+const { sha256 } = await client.addCaCertificate(fs.readFileSync('./proxy-ca.pem', 'utf8'));
+```
+
+</CodeGroup>
+
+`lim ios ca add` needs `lim` 0.45.0 or later, and `addCaCertificate` on the iOS client needs `@limrun/api` 0.64.0 or later. The CLI prints the certificate's SHA-256 fingerprint. Safari and apps trust the CA on their next connection, without a restart, and it stays trusted for the life of the instance. Adding the same certificate again changes nothing. Apps that pin their own certificates still reject it, and so do the simulator's Apple services.
+
 ## Transfer files
 
 List a directory to find the exact relative path, then pull, push, or delete files with the same container flags:
