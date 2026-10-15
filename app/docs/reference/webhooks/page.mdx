@@ -29,7 +29,9 @@ Replace `ORG_ID` with your organization TypeID, starting with `org_`. The respon
 
 Every `PUT` rotates the secret, including when the URL stays the same. A notification already being processed can finish using the previous configuration, including after you disable the webhook.
 
-The endpoint must use HTTPS with a DNS hostname. Delivery rejects private, loopback, and link-local addresses. Redirects are not followed.
+The endpoint must use HTTPS on port 443 with a public ASCII DNS hostname and a valid TLS certificate. URLs can contain paths and query parameters, but cannot contain embedded credentials or fragments. The maximum URL length is 2,048 bytes.
+
+Limrun checks every resolved address before each delivery attempt. Private, loopback, link-local, and special-use addresses are rejected, including mixed public and private DNS answers. Redirects are not followed. Return response headers smaller than 16 KiB; the response body is ignored.
 
 ## Events
 
