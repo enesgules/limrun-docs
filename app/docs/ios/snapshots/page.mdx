@@ -18,6 +18,8 @@ Snapshot-key discovery reads local Git metadata directly and works without the G
 
 Use `--snapshot-key` to override the default, or when there is no usable Git origin. Use `--no-snapshot` to create without snapshots. Explicit restore-only settings stay restore-only. SDK callers continue to choose their own `spec.snapshot.key`.
 
+Build success and failure messages include a `--snapshot-key` tip when the sandbox has no snapshot configuration. Use it when creating your next sandbox. The tip is omitted for configured snapshots, `--no-snapshot`, and JSON output.
+
 Keep the default for ordinary builds. If you regularly switch Xcode versions or need independent branch snapshots, choose separate keys. Concurrent publications to one key replace each other; the last publication wins.
 
 ## Save and reuse a disk snapshot
