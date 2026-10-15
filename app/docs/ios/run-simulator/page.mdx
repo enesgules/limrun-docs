@@ -851,38 +851,20 @@ await client.simctl(['spawn', 'booted', 'notifyutil', '-p', 'com.apple.Biometric
 
 </CodeGroup>
 
-## Send traffic through your proxy
+## Send traffic through a proxy
 
-Point the simulator's system proxy at an HTTP proxy, such as a proxy that records traffic or one your network requires. Safari, apps, and the simulator's own services then open new HTTP and HTTPS connections through it. Requests to `localhost` stay direct, so local servers and tunnels to them keep working.
-
-The simulator reaches the proxy through a tunnel, which lets the proxy run on your machine or anywhere in your network. Tunnel inspection passes requests meant for a proxy through as the device sent them, so the proxy sees and decodes the traffic itself. `lim ios proxy` needs `lim` 0.45.0 or later. For a proxy on your machine at port 3128:
-
-<CodeGroup labels={["CLI","TypeScript"]}>
-```bash
-lim ios tunnel --selector localhost:3128 --detach
-lim ios proxy set localhost:3128
-```
-
-```ts
-await client.startTunnel({ selectors: ['localhost:3128'] });
-await client.simctl(['spawn', 'booted', 'limproxy', 'set', 'localhost', '3128']).wait();
-```
-
-</CodeGroup>
-
-For a proxy elsewhere in your network, declare its name as the selector, for example `--selector proxy.example.internal`, and set the proxy to `proxy.example.internal:3128`. A [private tunnel](/docs/networking/private-tunnels#send-all-device-traffic-through-a-proxy) carries the proxy the same way for every instance that names it.
-
-New connections use the proxy as soon as you set it, while connections an app opened before keep their old route until you relaunch the app. To go direct again, clear the proxy before you stop the tunnel:
+Point the simulator's system proxy at a proxy of your own, so Safari and apps send their HTTP and HTTPS traffic through it:
 
 ```bash
+lim ios proxy set proxy.example.com:3128
 lim ios proxy clear
 ```
 
-`lim ios proxy clear` restores the settings that `lim ios proxy set` replaced. To read HTTPS traffic in the proxy, also [trust its CA](#trust-a-ca-certificate).
+A proxy on your machine or inside your network is reached through a tunnel. See [Send device traffic through a proxy](/docs/networking/proxy) for what goes through the proxy and how to reach one inside your network.
 
 ## Trust a CA certificate
 
-Add a CA certificate to the simulator's trusted roots, such as the CA of a proxy that records HTTPS traffic. The file holds one PEM-encoded CA certificate, and anything else is rejected:
+Add a CA certificate to the simulator's trusted roots, such as the CA of a [proxy](/docs/networking/proxy) that records HTTPS traffic. The file holds one PEM-encoded CA certificate, and anything else is rejected:
 
 <CodeGroup labels={["CLI","TypeScript"]}>
 ```bash

@@ -1,0 +1,99 @@
+---
+title: "Proxy configuration"
+description: "Route an iOS simulator's or Android emulator's HTTP and HTTPS traffic through your own proxy, on the internet or inside your network."
+order: 2
+icon: "route"
+---
+# Send device traffic through a proxy
+
+Point an instance's system proxy at an HTTP proxy of your own, such as a proxy that records traffic or one your network requires every request to pass through. Traffic that follows the system proxy then leaves through your proxy, so the proxy sees each request and your network's rules apply to it. The proxy can be on the internet or inside your network; a proxy inside your network is reached through a tunnel.
+
+## Set the proxy
+
+Set the proxy as `host:port`, where the host is a name or an IPv4 address. `lim ios proxy` and `lim android proxy` need `lim` 0.45.0 or later:
+
+<Tabs>
+<Tab title="iOS">
+
+<CodeGroup labels={["CLI","TypeScript"]}>
+```bash
+lim ios proxy set proxy.example.com:3128
+```
+
+```ts
+await client.simctl(['spawn', 'booted', 'limproxy', 'set', 'proxy.example.com', '3128']).wait();
+```
+
+</CodeGroup>
+
+Safari, apps, and the simulator's own services open new HTTP and HTTPS connections through the proxy. Requests to `localhost` stay direct, so local servers and tunnels to them keep working.
+
+</Tab>
+<Tab title="Android">
+
+<CodeGroup labels={["CLI","TypeScript"]}>
+```bash
+lim android proxy set proxy.example.com:3128
+```
+
+```ts
+await client.adbShell('settings', ['put', 'global', 'http_proxy', 'proxy.example.com:3128']);
+```
+
+</CodeGroup>
+
+Chrome and apps that follow the system proxy settings open new HTTP and HTTPS connections through the proxy.
+
+</Tab>
+</Tabs>
+
+Apps that ignore the system proxy settings keep connecting directly. New connections use the proxy as soon as you set it. On iOS, connections an app opened before keep their old route until you relaunch the app.
+
+## Clear the proxy
+
+Clear the proxy to send traffic directly again:
+
+```bash
+lim ios proxy clear
+lim android proxy clear
+```
+
+On iOS, `clear` restores the settings that `set` replaced. On Android, it turns the global proxy off.
+
+## Reach a proxy on the internet
+
+A proxy with a public address needs nothing more than the commands above. The instance connects to it directly, from the egress addresses of the region it runs in. If the proxy accepts only known clients, allowlist the [egress IP addresses](/docs/networking/egress-ip-addresses) for your instances' regions.
+
+## Reach a proxy inside your network
+
+When the proxy runs on your machine, inside your VPN, or behind a name only your network resolves, the device reaches it through a tunnel. Declare the proxy as the tunnel's selector, then point the device at the same address. Tunnel inspection passes requests meant for a proxy through as the device sent them, so the proxy sees the original requests.
+
+For one instance, start a destination tunnel from the machine that reaches the proxy. For a proxy on that machine at port 3128:
+
+```bash
+lim ios tunnel --selector localhost:3128 --detach
+lim ios proxy set localhost:3128
+```
+
+`lim android tunnel` works the same way. On Android, use a port other than 8080 for a `localhost` proxy, because the emulator already listens on 8080.
+
+To serve every instance from one connector, use a [private tunnel](/docs/networking/private-tunnels) whose selector is the proxy, and name it when you create instances:
+
+```bash
+lim tunnel create device-proxy --selector localhost:3128
+lim tunnel run --token <token>
+
+lim ios create --tunnel device-proxy
+lim ios proxy set localhost:3128
+
+lim android create --tunnel device-proxy
+lim android proxy set localhost:3128
+```
+
+For a proxy elsewhere in your network, use its name as the selector, for example `--selector proxy.example.internal`, and set the proxy to `proxy.example.internal:3128`. The machine that runs the tunnel must resolve and reach that name.
+
+To go direct again, clear the proxy before you stop the tunnel. On Android, Chrome's requests fail instead of going direct while the proxy is set but the tunnel is down.
+
+## Read HTTPS traffic in the proxy
+
+A proxy that decrypts HTTPS needs the device to trust its CA. Add the CA with `lim ios ca add` or `lim android ca add`; see [Trust a CA certificate on iOS](/docs/ios/run-simulator#trust-a-ca-certificate) and [on Android](/docs/android/run-emulator#trust-a-ca-certificate). Apps that pin their own certificates still reject the proxy's certificate, and so do the simulator's Apple services.

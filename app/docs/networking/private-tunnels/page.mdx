@@ -173,28 +173,7 @@ From the API, create the tunnel with `"ephemeral": true` and a `token`, then run
 
 ## Send all device traffic through a proxy
 
-A tunnel carries only the destinations you declare, and it has no catch-all selector. To send all of a device's traffic out through your network, for example through a proxy that records it, declare the proxy as the one destination and point the device's system proxy at it. Traffic that follows the system proxy then leaves through the proxy, while apps that ignore the system proxy still go direct.
-
-Create the tunnel with the proxy as its selector and run its connector. Tunnel inspection passes requests meant for a proxy through as the device sent them, so the proxy sees and decodes the traffic itself. For a proxy on the connector's machine at port 3128:
-
-```bash
-lim tunnel create device-proxy --selector localhost:3128
-lim tunnel run --token <token>
-```
-
-Then create each instance with the tunnel and set its proxy:
-
-```bash
-lim ios create --tunnel device-proxy
-lim ios proxy set localhost:3128
-
-lim android create --tunnel device-proxy
-lim android proxy set localhost:3128
-```
-
-For a proxy elsewhere in your network, use its name as the selector, as in `--selector proxy.example.internal`, and set the proxy to `proxy.example.internal:3128`. The connector's machine must resolve and reach that name.
-
-To read HTTPS traffic in the proxy, trust its CA on each instance with `lim ios ca add` or `lim android ca add`. See [Send traffic through your proxy](/docs/ios/run-simulator#send-traffic-through-your-proxy) for iOS and [its Android counterpart](/docs/android/run-emulator#send-traffic-through-your-proxy) for what the proxy covers and how to clear it.
+A tunnel carries only the destinations you declare and has no catch-all selector. To send all of a device's traffic out through your network, make your proxy the tunnel's selector and point the device's system proxy at it. See [Reach a proxy inside your network](/docs/networking/proxy#reach-a-proxy-inside-your-network).
 
 ## Troubleshooting
 
