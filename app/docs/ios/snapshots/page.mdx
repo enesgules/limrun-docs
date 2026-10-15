@@ -12,6 +12,8 @@ Use a disk snapshot to carry source files, dependencies, and Xcode's DerivedData
 
 The default key is the remote host/repository plus the project's repo-relative directory. Building `apps/ios` in `git@github.com:acme/monorepo.git` uses `github.com/acme/monorepo/apps/ios`. HTTPS and SSH origins produce the same key. Branch names, commit hashes, and local checkout paths are excluded.
 
+Snapshot-key discovery reads local Git metadata directly and works without the Git executable, including in worktrees and submodules. It walks up from the project path to find `.git`. Use an explicit `--snapshot-key` if the checkout has no Git metadata or its origin depends on config includes or global URL rewrites.
+
 `lim xcode build`, `test`, and `sync` derive the key from the path you pass. `lim xcode create` and `lim ios create --xcode` use the current directory. `lim run` uses the detected or cloned project. The CLI sets only the snapshot key, which is used for both restore and publication. Existing instances keep their original configuration.
 
 Use `--snapshot-key` to override the default, or when there is no usable Git origin. Use `--no-snapshot` to create without snapshots. Explicit restore-only settings stay restore-only. SDK callers continue to choose their own `spec.snapshot.key`.
