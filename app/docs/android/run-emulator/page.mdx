@@ -921,23 +921,6 @@ lim android set-wifi-bandwidth --down-kbps 1000 --up-kbps 500
 
 The TypeScript SDK methods are `setCameraVideo(path, { loop })`, `clearCameraVideo()`, `playOnMicrophone(path, { once })` for a file already on the instance (upload it with `pushFile`), and `setWifiBandwidth({ downKbps, upKbps })`.
 
-### Turn on the lock screen
-
-Emulators boot with the lock screen off, so the home screen appears as soon as the device wakes. To test notifications or media controls on the lock screen, turn on the swipe lock screen with [`adb-shell`](#run-shell-commands-and-move-files-without-a-tunnel):
-
-```bash
-lim android adb-shell -- locksettings set-disabled false
-```
-
-Then put the device to sleep and wake it to show the lock screen:
-
-```bash
-lim android adb-shell -- input keyevent KEYCODE_SLEEP
-lim android adb-shell -- input keyevent KEYCODE_WAKEUP
-```
-
-A swipe up unlocks it. There is no PIN. The setting lasts for the life of the instance, and the next instance boots with the lock screen off again. The same commands work over `adb shell` through the [ADB tunnel](#open-an-adb-tunnel), or through `adbShell` in the TypeScript SDK.
-
 ### Send traffic through a proxy
 
 Point the emulator's global HTTP proxy at a proxy of your own, so Chrome and apps that follow the system proxy settings send their HTTP and HTTPS traffic through it:
@@ -962,6 +945,23 @@ The CLI prints the certificate's file name in the system store and its SHA-256 f
 To see the HTTP and HTTPS traffic an app sends to the destinations you tunnel, use [tunnel inspection](/docs/android/local-services#inspect-tunnel-traffic) instead. It decodes HTTPS with a CA the emulator already trusts, so you need no CA of your own.
 
 In the TypeScript SDK, `addCaCertificate(pem)` takes the PEM text and resolves to `{ filename, sha256 }`. It needs a device client opened with `adbUrl`.
+
+### Turn on the lock screen
+
+Emulators boot with the lock screen off, so the home screen appears as soon as the device wakes. To test notifications or media controls on the lock screen, turn on the swipe lock screen with [`adb-shell`](#run-shell-commands-and-move-files-without-a-tunnel):
+
+```bash
+lim android adb-shell -- locksettings set-disabled false
+```
+
+Then put the device to sleep and wake it to show the lock screen:
+
+```bash
+lim android adb-shell -- input keyevent KEYCODE_SLEEP
+lim android adb-shell -- input keyevent KEYCODE_WAKEUP
+```
+
+A swipe up unlocks it. There is no PIN. The setting lasts for the life of the instance, and the next instance boots with the lock screen off again. The same commands work over `adb shell` through the [ADB tunnel](#open-an-adb-tunnel), or through `adbShell` in the TypeScript SDK.
 
 ## Manage the connection
 
