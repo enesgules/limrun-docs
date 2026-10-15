@@ -25,9 +25,9 @@ Replace `ORG_ID` with your organization TypeID, starting with `org_`. The respon
 | --- | --- | --- |
 | `PUT` | `/v1/organizations/{organizationId}/instance_webhook` | Sets the URL and generates a new signing secret. |
 | `GET` | `/v1/organizations/{organizationId}/instance_webhook` | Returns the URL, or `404` if no webhook is configured. |
-| `DELETE` | `/v1/organizations/{organizationId}/instance_webhook` | Disables the webhook and discards pending deliveries. |
+| `DELETE` | `/v1/organizations/{organizationId}/instance_webhook` | Disables the webhook. |
 
-Every `PUT` rotates the secret, including when the URL stays the same. Pending deliveries use the current URL and secret. A delivery already in progress can finish using the previous configuration.
+Every `PUT` rotates the secret, including when the URL stays the same. A notification already being processed can finish using the previous configuration, including after you disable the webhook.
 
 The endpoint must use HTTPS with a DNS hostname. Delivery rejects private, loopback, and link-local addresses. Redirects are not followed.
 
@@ -41,7 +41,7 @@ Configure the endpoint before creating simulators. Existing lifecycle history is
 | `instance.ready` | Limrun records the simulator as ready. |
 | `instance.terminated` | Limrun records termination. Billing and physical cleanup may still be pending. |
 
-A create request that fails before assignment does not produce a webhook. Notifications can arrive late during an outage. Xcode builds, Gradle builds, billing, and registry operations are outside this webhook's scope.
+A create request that fails before assignment does not produce a webhook. Notifications can arrive late or be lost during an outage. Xcode builds, Gradle builds, billing, and registry operations are outside this webhook's scope.
 
 ```json
 {
@@ -81,8 +81,10 @@ function verifyWebhook(rawBody, signature, secret) {
 
 Pass the unmodified request bytes as `rawBody`. Parsing and reserializing JSON can change the signature input.
 
-## Delivery and retries
+## Delivery
 
-Return a `2xx` response after accepting the event. Limrun retries timeouts, connection failures, and other HTTP responses, up to 12 attempts. Retry delays start at 30 seconds and increase to a maximum of six hours. Invalid destinations and exhausted deliveries are discarded.
+Delivery is best effort. Limrun attempts each notification once, with a 20-second timeout and no automatic retries. Failed requests, service restarts, and delivery capacity limits can cause notifications to be lost. Return a `2xx` response after accepting the event.
 
-Retries keep the same event ID and payload. Store processed event IDs so duplicate deliveries do not repeat your application's actions. Delivery order is not guaranteed; use `occurredAt` and the event type when updating your state. There is no delivery history or manual replay API.
+Duplicates and out-of-order delivery are possible. Store processed event IDs so duplicate notifications do not repeat your application's actions. Use `occurredAt` and the event type when updating your state. If your application needs to confirm the current state, read the instance through the API.
+
+There is no delivery history or manual replay API.
