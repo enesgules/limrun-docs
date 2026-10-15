@@ -85,6 +85,7 @@
         "icon": "network",
         "pages": [
           "networking/private-tunnels",
+          "networking/proxy",
           "networking/egress-ip-addresses"
         ]
       },
