@@ -29,6 +29,7 @@ import {
   Webhook,
   Users,
   Workflow,
+  Route,
 } from "lucide-react";
 import { SidebarThemeToggle } from "@/components/sidebar-theme-toggle";
 import { MCP_NAME, MCP_VERSION, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
@@ -259,6 +260,7 @@ export default defineDocs({
     package: <Package size={15} />,
     plug: <Plug size={15} />,
     "shield-check": <ShieldCheck size={15} />,
+    "route": <Route size={15} />,
     webhook: <Webhook size={15} />,
     users: <Users size={15} />,
     workflow: <Workflow size={15} />,
