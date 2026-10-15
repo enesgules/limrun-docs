@@ -10,24 +10,28 @@ Each organization can configure one HTTPS endpoint for lifecycle notifications f
 
 ## Configuration
 
-Organization administrators and API keys with the `organization:*:all` scope can manage the webhook. Instance tokens cannot manage it.
+Only organization admins can manage webhook settings. Members, viewers, API keys, and instance tokens cannot read or change the configuration.
 
-```bash
-curl -X PUT https://api.limrun.com/v1/organizations/ORG_ID/instance_webhook \
-  -H "Authorization: Bearer $LIM_API_KEY" \
-  -H 'Content-Type: application/json' \
-  -d '{"url":"https://your-app.example.com/limrun/events"}'
-```
+1. Select your organization in the Console and open **Settings → Webhooks**.
+2. Enter your receiver's **Webhook URL**.
+3. If your receiver requires authentication, enter the full **Authorization** header value, such as `Bearer your-token`. Leave it blank if no token is required.
+4. Select **Save webhook** and copy the signing secret. Use it in your receiver to [verify incoming events](#signatures).
 
-Replace `ORG_ID` with your organization TypeID, starting with `org_`. The response contains `url` and `signingSecret`. Save the secret securely; subsequent reads omit it.
+The signing secret lets your server verify that a message came from Limrun and was not modified. Limrun generates it and shows it only after saving. The optional Authorization value is a separate credential that your receiver asks Limrun to send.
+
+To change authentication, enter a replacement value or select **Remove saved Authorization value**. A blank field keeps the saved value when the URL is unchanged. Changing the URL clears the saved credential unless you enter a new value. Saved Authorization values are never displayed again. Select **Disable webhook** to stop new deliveries and remove the saved settings.
+
+Every save replaces the signing secret, even when the URL stays the same. Update your receiver after saving. A notification already being processed can finish using the previous configuration, including after you disable the webhook.
+
+These endpoints require a session belonging to a current organization admin:
 
 | Method | Path | Behavior |
 | --- | --- | --- |
-| `PUT` | `/v1/organizations/{organizationId}/instance_webhook` | Sets the URL and generates a new signing secret. |
-| `GET` | `/v1/organizations/{organizationId}/instance_webhook` | Returns the URL, or `404` if no webhook is configured. |
-| `DELETE` | `/v1/organizations/{organizationId}/instance_webhook` | Disables the webhook. |
+| `PUT` | `/v1/organizations/{organizationId}/instance_webhook` | Accepts `url` and optional `authorization`. Returns `url`, `hasAuthorization`, and a new `signingSecret`. |
+| `GET` | `/v1/organizations/{organizationId}/instance_webhook` | Returns `url` and `hasAuthorization`, or `404` if no webhook is configured. |
+| `DELETE` | `/v1/organizations/{organizationId}/instance_webhook` | Disables the webhook and removes its credentials. |
 
-Every `PUT` rotates the secret, including when the URL stays the same. A notification already being processed can finish using the previous configuration, including after you disable the webhook.
+The optional `authorization` field accepts up to 4,096 printable ASCII characters without surrounding whitespace. Omitting it preserves the saved value only when the URL is unchanged; sending an empty string removes it.
 
 The endpoint must use HTTPS on port 443 with a public ASCII DNS hostname and a valid TLS certificate. URLs can contain paths and query parameters, but cannot contain embedded credentials or fragments. The maximum URL length is 2,048 bytes.
 
@@ -63,7 +67,7 @@ A create request that fails before assignment does not produce a webhook. Notifi
 
 ## Signatures
 
-Requests include `Limrun-Event-Id` and `Limrun-Signature`. The signature has the format `t=UNIX_SECONDS,v1=HEX_HMAC`.
+Requests include `Limrun-Event-Id` and `Limrun-Signature`. If configured, Limrun also sends your saved `Authorization` header value. The signature has the format `t=UNIX_SECONDS,v1=HEX_HMAC`.
 
 Compute HMAC-SHA256 using the complete signing secret over the timestamp, a dot, and the exact raw request body. Verify the signature before parsing JSON. Reject timestamps outside a five-minute tolerance to limit replay of captured requests.
 
