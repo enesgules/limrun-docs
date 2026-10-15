@@ -83,7 +83,9 @@ Pass the unmodified request bytes as `rawBody`. Parsing and reserializing JSON c
 
 ## Delivery
 
-Delivery is best effort. Limrun attempts each notification once, with a 20-second timeout and no automatic retries. Failed requests, service restarts, and delivery capacity limits can cause notifications to be lost. Return a `2xx` response after accepting the event.
+Delivery is best effort. Return a `2xx` response after accepting the event. Limrun makes up to five attempts, with a 20-second timeout per attempt. Failed attempts are followed by waits of 1, 2, 4, and 8 seconds. A successful response stops retries. Each retry keeps the same event ID and payload.
+
+Retries are held in memory. Service restarts, delivery capacity limits, and exhausted retries can cause notifications to be lost.
 
 Duplicates and out-of-order delivery are possible. Store processed event IDs so duplicate notifications do not repeat your application's actions. Use `occurredAt` and the event type when updating your state. If your application needs to confirm the current state, read the instance through the API.
 
