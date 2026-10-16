@@ -947,6 +947,23 @@ To see the HTTP and HTTPS traffic an app sends to the destinations you tunnel, u
 
 In the TypeScript SDK, `addCaCertificate(pem)` takes the PEM text and resolves to `{ filename, sha256 }`. It needs a device client opened with `adbUrl`.
 
+### Turn on the lock screen
+
+Emulators boot with the lock screen off, so the home screen appears as soon as the device wakes. To test notifications or media controls on the lock screen, turn on the swipe lock screen with [`adb-shell`](#run-shell-commands-and-move-files-without-a-tunnel):
+
+```bash
+lim android adb-shell -- locksettings set-disabled false
+```
+
+Then put the device to sleep and wake it to show the lock screen:
+
+```bash
+lim android adb-shell -- input keyevent KEYCODE_SLEEP
+lim android adb-shell -- input keyevent KEYCODE_WAKEUP
+```
+
+A swipe up unlocks it. There is no PIN. The setting lasts for the life of the instance, and the next instance boots with the lock screen off again. The same commands work over `adb shell` through the [ADB tunnel](#open-an-adb-tunnel), or through `adbShell` in the TypeScript SDK.
+
 ## Manage the connection
 
 The TypeScript client exposes lifecycle hooks for long-running drivers and connection debugging. It pings the WebSocket every 30 seconds and reports state changes through a callback. Call `keepAlive` for an explicit application-level ping (during a long idle stretch, or before a known network transition), and use `getConnectionState` and `onConnectionStateChange` to observe the connection:
