@@ -15,7 +15,8 @@ Only organization admins can manage webhook settings. Members, viewers, API keys
 1. Select your organization in the Console and open **Settings → Webhooks**.
 2. Enter your receiver's **Webhook URL**.
 3. If your receiver requires authentication, enter the full **Authorization** header value, such as `Bearer your-token`. Leave it blank if no token is required.
-4. Select **Save webhook** and copy the signing secret. Use it in your receiver to [verify incoming events](#signatures).
+4. To receive connection details with ready events, enable **Include instance details and access token in ready events**. This is off by default.
+5. Select **Save webhook** and copy the signing secret. Use it in your receiver to [verify incoming events](#signatures).
 
 The signing secret lets your server verify that a message came from Limrun and was not modified. Limrun generates it and shows it only after saving. The optional Authorization value is a separate credential that your receiver asks Limrun to send.
 
@@ -27,11 +28,13 @@ These endpoints require a session belonging to a current organization admin:
 
 | Method | Path | Behavior |
 | --- | --- | --- |
-| `PUT` | `/v1/organizations/{organizationId}/instance_webhook` | Accepts `url` and optional `authorization`. Returns `url`, `hasAuthorization`, and a new `signingSecret`. |
-| `GET` | `/v1/organizations/{organizationId}/instance_webhook` | Returns `url` and `hasAuthorization`, or `404` if no webhook is configured. |
+| `PUT` | `/v1/organizations/{organizationId}/instance_webhook` | Accepts `url`, optional `authorization`, and optional `includeInstance`. Returns `url`, `hasAuthorization`, `includeInstance`, and a new `signingSecret`. |
+| `GET` | `/v1/organizations/{organizationId}/instance_webhook` | Returns `url`, `hasAuthorization`, and `includeInstance`, or `404` if no webhook is configured. |
 | `DELETE` | `/v1/organizations/{organizationId}/instance_webhook` | Disables the webhook and removes its credentials. |
 
 The optional `authorization` field accepts up to 4,096 printable ASCII characters without surrounding whitespace. Omitting it preserves the saved value only when the URL is unchanged; sending an empty string removes it.
+
+The optional `includeInstance` boolean enables the instance object and access token on ready events. Its default is `false`. Omitting it keeps the setting only when the URL is unchanged. Changing the URL resets it to `false` unless you explicitly send `true`. Disabling the webhook clears the setting.
 
 The endpoint must use HTTPS on port 443 with a public ASCII DNS hostname and a valid TLS certificate. URLs can contain paths and query parameters, but cannot contain embedded credentials or fragments. The maximum URL length is 2,048 bytes.
 
@@ -64,6 +67,59 @@ A create request that fails before assignment does not produce a webhook. Notifi
 `product` is `ios`, `android`, `xcode`, or `gradle`. Xcode instance IDs keep the `sandbox_` prefix. Additional product values may be added; ignore values your receiver does not handle.
 
 `reason` appears on termination events and uses `UserRequested`, `InactivityTimeout`, `HardTimeout`, or `Unknown`. Treat unrecognized reasons as `Unknown`.
+
+## Instance details on ready events
+
+With `includeInstance: true`, only `instance.ready` events include an `instance` field. It uses the public instance response shape for the event's `product`, with `metadata`, `spec`, and `status`. The object reflects the instance when Limrun records readiness. It is a snapshot, so the instance might have terminated by the time your receiver handles it.
+
+`instance.status.token` grants control of this instance in its organization. It is an instance access token, separate from the webhook signing secret and your receiver's Authorization value. Use a trusted receiver, keep the payload out of logs, and pass the token only to users allowed to control that instance. Disabling webhooks stops new deliveries but does not revoke tokens already delivered. Access to the running instance ends when it terminates.
+
+For iOS and Android, `instance.status.endpointWebSocketUrl` and `instance.status.token` can supply the `url` and `token` props of [`RemoteControl`](/docs/platform/embed-simulator). Xcode and Gradle include `status.apiUrl` and `status.token` for their sandbox APIs. Optional `signedStreamUrl` and `streamToken` fields are omitted.
+
+For example, a ready event for an iOS instance can contain:
+
+```json
+{
+  "id": "127c0c0c-807f-5306-aa3c-0d0031518dde",
+  "type": "instance.ready",
+  "organizationId": "org_...",
+  "instanceId": "ios_euna_...",
+  "product": "ios",
+  "occurredAt": "2026-10-16T10:00:00Z",
+  "instance": {
+    "metadata": {
+      "id": "ios_euna_...",
+      "organizationId": "org_...",
+      "createdAt": "2026-10-16T09:59:00Z",
+      "displayName": "Demo instance",
+      "labels": { "session": "customer-session" }
+    },
+    "spec": { "region": "eu-north1", "inactivityTimeout": "3m" },
+    "status": {
+      "state": "ready",
+      "apiUrl": "https://eu-north1.example/ios_euna_.../api",
+      "endpointWebSocketUrl": "wss://eu-north1.example/ios_euna_.../endpoint",
+      "token": "lim_st_..."
+    }
+  }
+}
+```
+
+Create the iOS or Android instance with `wait=false` to return before readiness. Your backend receives and verifies the webhook, then forwards the instance to the authorized browser through your application's own connection. The browser can render it without another instance GET:
+
+```jsx
+import { RemoteControl } from '@limrun/ui';
+
+// event is the verified ready event forwarded by your backend.
+export function ReadyInstance({ event }) {
+  if (event.type !== 'instance.ready' || !['ios', 'android'].includes(event.product)) return null;
+  const status = event.instance?.status;
+  if (!status?.endpointWebSocketUrl || !status.token) return null;
+  return <RemoteControl url={status.endpointWebSocketUrl} token={status.token} />;
+}
+```
+
+Webhook delivery remains best effort. Keep an API fallback if your application must recover from a missing ready event.
 
 ## Signatures
 
