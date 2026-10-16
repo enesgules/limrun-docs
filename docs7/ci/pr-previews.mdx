@@ -202,9 +202,10 @@ preview and restored before the app launches on their next one:
 ```
 
 The saved state holds the simulator keychain, which is where login sessions
-live, the app's settings and local data (`Documents`, `Library/Preferences`, and
-`Library/Application Support` of the app and its App Groups), and the privacy
-permissions the reviewer granted. Caches and downloaded media are not saved.
+live, the app's data container and App Group containers, and the privacy
+permissions the reviewer granted. Caches, `tmp`, and system-managed files are
+not saved, and an app whose remaining data exceeds 256 MiB is left out of the
+save.
 
 The key is a name, not a secret, and the link that carries it is posted on the
 pull request for everyone. Who the state belongs to comes from the reviewer's
