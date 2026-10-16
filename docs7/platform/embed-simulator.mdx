@@ -23,6 +23,8 @@ The Limrun console's Playground uses this same component for its streaming view,
 - **A backend that can create instances.** The single contract between your backend and `<RemoteControl />` is the pair `status.endpointWebSocketUrl` and a token. The examples pass `status.token`. `status.streamToken` opens only the streaming WebSocket, so a browser can hold it while `status.token` stays on your backend. Every spec field, clue, and timeout is listed in [Instance spec and status](/reference/instances).
 - **A React 18+ frontend**, such as Vite, Next.js, Create React App, or Remix.
 
+`status.streamToken` supports interactive viewer actions on Android and iOS, including `openUrl` for web URLs and app deep links. The `<RemoteControl />` `openUrl` prop and `ref.current.openUrl(url)` use the streaming WebSocket. Opening a link can launch its registered app. App installation and explicit app launch or termination still require `status.token`.
+
 If your platform also builds your customers' apps, [Build with Xcode](/ios/build-with-xcode) covers compiling iOS apps on a remote Mac.
 
 ## How the pieces fit
