@@ -28,6 +28,8 @@ Every iOS, Android, Xcode, and Gradle instance moves through the same lifecycle:
 
 `status.errorMessage` is set when the instance terminated because of an error. A create call with `wait: true` returns once the instance is `ready`.
 
+To receive notifications when an instance is created, becomes ready, or terminates, configure [instance webhooks](/reference/webhooks). They support all four instance types. Ready events can optionally include the instance object and its access token.
+
 ## Status fields
 
 A `ready` instance carries the URLs its data plane needs in `status`. Every URL authenticates with the instance token, never the API key.
@@ -97,7 +99,7 @@ Every create call, for any instance type, accepts these parameters next to `spec
 
 | Field | Type | Meaning |
 |---|---|---|
-| `wait` | boolean | When `true`, the call returns only after `status.state === 'ready'`; without it, poll. Default `false`. |
+| `wait` | boolean | When `true`, the call returns only after `status.state === 'ready'`. If the response is not ready yet, poll or receive an [`instance.ready` webhook](/reference/webhooks). Default `false`. |
 | `reuseIfExists` | boolean | When `true`, return the existing instance whose `metadata.labels` match exactly instead of creating one. The lookup runs in the region that handles the create, so a placement change can miss. Default `false`. |
 | `metadata.labels` | `Record<string, string>` | Free-form `key=value` map. Powers `reuseIfExists`, `labelSelector` listing, and bulk cleanup. See [Labels](#labels). |
 | `metadata.displayName` | string | Human-readable name shown in the console next to `metadata.id`. |

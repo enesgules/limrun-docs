@@ -136,6 +136,8 @@ Both lists stay available after the instance is deleted. For a build that ran th
 
 ## Receive a webhook
 
+For notifications when the sandbox itself is created, becomes ready, or terminates, configure [instance webhooks](/reference/webhooks) in the Console. The build webhooks below report the result of an individual build.
+
 Pass a webhook URL when something needs the terminal result without watching the live stream. Limrun POSTs to it once the build reaches `SUCCEEDED`, `FAILED`, or `CANCELLED`, whether the caller keeps streaming or detaches:
 
 <Tabs>

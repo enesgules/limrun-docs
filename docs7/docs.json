@@ -114,6 +114,7 @@
           "reference/cli",
           "reference/sdk",
           "reference/instances",
+          "reference/webhooks",
           {
             "group": "Single sign-on",
             "icon": "shield-check",
