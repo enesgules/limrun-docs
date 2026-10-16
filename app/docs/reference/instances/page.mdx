@@ -99,7 +99,7 @@ Every create call, for any instance type, accepts these parameters next to `spec
 
 | Field | Type | Meaning |
 |---|---|---|
-| `wait` | boolean | When `true`, the call returns only after `status.state === 'ready'`. Otherwise, poll or receive an [`instance.ready` webhook](/docs/reference/webhooks). Default `false`. |
+| `wait` | boolean | When `true`, the call returns only after `status.state === 'ready'`. If the response is not ready yet, poll or receive an [`instance.ready` webhook](/docs/reference/webhooks). Default `false`. |
 | `reuseIfExists` | boolean | When `true`, return the existing instance whose `metadata.labels` match exactly instead of creating one. The lookup runs in the region that handles the create, so a placement change can miss. Default `false`. |
 | `metadata.labels` | `Record<string, string>` | Free-form `key=value` map. Powers `reuseIfExists`, `labelSelector` listing, and bulk cleanup. See [Labels](#labels). |
 | `metadata.displayName` | string | Human-readable name shown in the console next to `metadata.id`. |

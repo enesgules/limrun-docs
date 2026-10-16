@@ -12,24 +12,30 @@ Receive `instance.created`, `instance.ready`, and `instance.terminated` events f
 
 Only organization admins can manage webhook settings. Members, viewers, API keys, and instance tokens cannot read or change the configuration.
 
+Prepare an HTTPS endpoint that accepts JSON `POST` requests and returns a `2xx` status after accepting an event. The steps below configure Limrun to send events to that endpoint.
+
 1. Select your organization in the [Console](https://console.limrun.com/settings) and open **Settings → Webhooks**.
 2. Enter your receiver's **Webhook URL**.
 3. If your receiver requires authentication, enter the full **Authorization** header value, such as `Bearer your-token`. Leave it blank if no token is required.
 4. To receive connection details with ready events, enable **Include instance details and access token in ready events**. This is off by default.
 5. Select **Save webhook** and copy the signing secret. Use it in your receiver to [verify incoming events](#signatures).
-6. Select **Send test event**. Confirm that your receiver accepts the signed `webhook.ping` and returns a `2xx` response.
+6. Select **Send test event**. Confirm that your receiver accepts the signed [`webhook.ping`](#test-events) and returns a `2xx` response.
 
 The signing secret lets your server verify that a message came from Limrun and was not modified. Limrun generates it when you create the webhook, change its URL, or rotate the secret. Each new secret is shown only once. The optional Authorization value is a separate credential that your receiver asks Limrun to send.
 
 To change authentication, enter a replacement value or select **Remove saved Authorization value**. A blank field keeps the saved value when the URL is unchanged. Changing the URL clears the saved credential unless you enter a new value. Saved Authorization values are never displayed again. Select **Delete webhook** and confirm to remove the saved settings and stop new deliveries.
 
-Ordinary saves preserve the signing secret. To replace it, select **Rotate secret** and confirm, then copy the new secret to your receiver. Changing the URL also generates a new secret. Deliveries already in progress can finish using the previous configuration, including after rotation or deletion.
+Ordinary saves preserve the signing secret. If you lose it or need to replace it, select **Rotate secret** and confirm, then copy the new secret to your receiver. Changing the URL also generates a new secret and turns off the ready-event instance details option until you enable it again for the new receiver.
+
+Once delivery starts, all attempts use the same URL, Authorization value, signing secret, and payload. Editing or deleting the webhook does not cancel those deliveries. If you rotate the secret, allow for requests signed with the previous secret while those retries finish.
 
 ### Endpoint requirements
 
 The endpoint must use HTTPS on port 443 with a public ASCII DNS hostname and a valid TLS certificate. URLs can contain paths and query parameters, but cannot contain embedded credentials or fragments. The maximum URL length is 2,048 bytes.
 
 Limrun checks every resolved address before each delivery attempt. Private, loopback, link-local, and special-use addresses are rejected, including mixed public and private DNS answers. Redirects are not followed. Return response headers smaller than 16 KiB; the response body is ignored.
+
+Saving validates the URL's format; it does not confirm that Limrun can reach your receiver. Use **Send test event** to check delivery. For local development, expose your receiver through a public HTTPS tunnel and configure the full route, such as `https://your-tunnel.example.com/webhook`. Opening that URL in a browser sends a `GET`, which does not test webhook delivery.
 
 ## Test events
 
@@ -50,15 +56,17 @@ The test API returns HTTP `200` with `delivered: false` when delivery fails. A c
 
 ## Events
 
-Configure the endpoint before creating instances. Existing lifecycle history is not sent.
+Configure the endpoint before creating instances. All three event types are enabled for the organization; there is no event selector. Existing lifecycle history is not sent.
 
 | Event | Meaning |
 | --- | --- |
-| `instance.created` | Limrun first records the instance after assignment. `occurredAt` contains its creation timestamp. |
-| `instance.ready` | Limrun records the instance as ready. |
+| `instance.created` | Limrun records that the instance has been assigned resources. It may still be starting. `occurredAt` contains its creation timestamp. |
+| `instance.ready` | Limrun records the instance as ready to connect. |
 | `instance.terminated` | Limrun records termination. Billing and physical cleanup may still be pending. |
 
-A create request that fails before assignment does not produce a webhook. Notifications can arrive late or be lost during an outage. For Xcode and Gradle, these events describe the sandbox's lifetime. Individual build results use [build webhooks](/docs/ci/build-logs-and-webhooks). Billing and registry operations are outside this webhook's scope.
+Events describe instance state changes, not individual API requests. An instance that terminates during startup might never emit `instance.ready`. Reusing an existing instance with `reuseIfExists: true` does not trigger a new created or ready event just because you called create again. Use the API response if the reused instance is already ready.
+
+Notifications can arrive late or be lost during an outage. For Xcode and Gradle, these events describe the sandbox's lifetime. Individual build results use [build webhooks](/docs/ci/build-logs-and-webhooks). Billing and registry operations are outside this webhook's scope.
 
 ### Payloads
 
@@ -127,13 +135,15 @@ Xcode instance IDs use the `sandbox_` prefix. Ignore product values your receive
 
 ## Instance details on ready events
 
-With `includeInstance: true`, only `instance.ready` events include an `instance` field. It uses the public instance response shape for the event's `product`, with `metadata`, `spec`, and `status`. The object reflects the instance when Limrun records readiness. It is a snapshot, so the instance might have terminated by the time your receiver handles it.
+Enable **Include instance details and access token in ready events** in the Console to add an `instance` field to `instance.ready`. The corresponding configuration API field is `includeInstance`. Created, terminated, and test events do not include an instance object.
+
+The object uses the public instance response shape for the event's `product`, with `metadata`, `spec`, and `status`. It reflects the instance when Limrun records readiness. The instance might have terminated by the time your receiver handles the event.
 
 `instance.status.token` grants control of this instance in its organization. It is an instance access token, separate from the webhook signing secret and your receiver's Authorization value. Use a trusted receiver, keep the payload out of logs, and pass the token only to users allowed to control that instance. Deleting the webhook stops new deliveries but does not revoke tokens already delivered. Access to the running instance ends when it terminates.
 
 For iOS and Android, `instance.status.endpointWebSocketUrl` and `instance.status.token` can supply the `url` and `token` props of [`RemoteControl`](/docs/platform/embed-simulator). Xcode and Gradle include `status.apiUrl` and `status.token` for their sandbox APIs. Optional `signedStreamUrl` and `streamToken` fields are omitted.
 
-For example, a ready event for an iOS instance can contain:
+This iOS example shows the fields needed to connect. Other product-specific and optional fields can also be present:
 
 ```json
 {
@@ -162,7 +172,9 @@ For example, a ready event for an iOS instance can contain:
 }
 ```
 
-Create the iOS or Android instance with `wait=false` to return before readiness. Your backend receives and verifies the webhook, then forwards the instance to the authorized browser through your application's own connection. The browser can render it without another instance GET:
+Create the iOS or Android instance with `wait=false` to return without waiting for readiness. Your backend receives and verifies the webhook, then forwards the instance to the authorized browser through your application's own connection. Correlate it with the session using `instanceId` or labels you set when creating the instance. The event can arrive before the create response, so your receiver must be ready first.
+
+The browser can render it without another instance GET:
 
 ```jsx
 import { RemoteControl } from '@limrun/ui';
@@ -209,15 +221,36 @@ function verifyWebhook(rawBody, signature, secret) {
 }
 ```
 
-Pass the unmodified request bytes as `rawBody`. Parsing and reserializing JSON can change the signature input.
+Pass the unmodified request bytes as `rawBody`. Parsing and reserializing JSON can change the signature input. For example, a Node.js route using the Web `Request` API can read the bytes before parsing:
+
+```javascript
+export async function POST(request) {
+  const secret = process.env.LIMRUN_WEBHOOK_SIGNING_SECRET;
+  if (!secret) throw new Error("LIMRUN_WEBHOOK_SIGNING_SECRET is required");
+
+  const rawBody = Buffer.from(await request.arrayBuffer());
+  if (!verifyWebhook(rawBody, request.headers.get("Limrun-Signature"), secret)) {
+    return new Response("Invalid signature", { status: 401 });
+  }
+
+  const event = JSON.parse(rawBody.toString("utf8"));
+  if (event.type === "webhook.ping") return new Response(null, { status: 204 });
+
+  // Implement this in your app: deduplicate by event.id, then accept the event.
+  await handleInstanceEvent(event);
+  return new Response(null, { status: 204 });
+}
+```
+
+Use `verifyWebhook` from the preceding example and set `LIMRUN_WEBHOOK_SIGNING_SECRET` to the secret copied from the Console. `handleInstanceEvent` represents your application logic; Limrun does not provide that function. If you configured an Authorization value, validate that header in your receiver too. Set a request body size limit in your server, and in frameworks with automatic JSON parsing, preserve the raw body before the parser runs.
 
 ## Delivery
 
-Delivery is best effort. Return a `2xx` response after accepting the event. Limrun makes up to five attempts, with a 20-second timeout per attempt. Failed attempts are followed by waits of 1, 2, 4, and 8 seconds. A successful response stops retries. Each retry keeps the same event ID and payload.
+Delivery is best effort. Return a `2xx` response promptly after accepting the event, and run lengthy work asynchronously. Limrun makes up to five attempts in total, including the first request, with a 20-second timeout per attempt. Timeouts, connection errors, and non-`2xx` responses count as failures, including `4xx` responses. Failed attempts are followed by waits of 1, 2, 4, and 8 seconds. A successful response stops retries. Each retry keeps the same event ID and payload.
 
 Retries are held in memory. Service restarts, delivery capacity limits, and exhausted retries can cause notifications to be lost.
 
-Duplicates and out-of-order delivery are possible. Store processed event IDs so duplicate notifications do not repeat your application's actions. Use `occurredAt` and the event type when updating your state. If your application needs to confirm the current state, read the instance through the API.
+Duplicates and out-of-order delivery are possible. Store processed event IDs so duplicate notifications do not repeat your application's actions. A late created or ready event must not move an instance you already know has terminated back to a running state. If your application needs to confirm the current state, read the instance through the API.
 
 There is no delivery history or manual replay API.
 
@@ -231,7 +264,7 @@ These endpoints require a session belonging to a current organization admin. API
 | `GET` | `/v1/organizations/{organizationId}/instance_webhook` | Returns `url`, `hasAuthorization`, and `includeInstance`, or `404` if no webhook is configured. |
 | `DELETE` | `/v1/organizations/{organizationId}/instance_webhook` | Deletes the webhook and its credentials. |
 | `POST` | `/v1/organizations/{organizationId}/instance_webhook/signing_secret` | Replaces the configured webhook's signing secret and returns `{ "signingSecret": "whsec_..." }`. |
-| `POST` | `/v1/organizations/{organizationId}/instance_webhook/test` | Sends one test event to the saved endpoint. Returns `delivered`, `message`, and `statusCode` if the receiver responded. |
+| `POST` | `/v1/organizations/{organizationId}/instance_webhook/test` | Sends one test event to the saved endpoint. Returns `delivered` and `message`; includes `statusCode` if the receiver returned an HTTP response. |
 
 The optional `authorization` field accepts up to 4,096 printable ASCII characters without surrounding whitespace. Omitting it preserves the saved value only when the URL is unchanged; sending an empty string removes it.
 

@@ -55,7 +55,7 @@ The instance token works only while that one instance is running and grants acce
 
 A minimal session endpoint creates an instance for an end user and returns the two strings the frontend needs. The same shape works in Fastify, Next.js route handlers, Go's `net/http`, or FastAPI; only the framework wrapper changes.
 
-The examples below wait for the instance to become ready. To return before readiness, set `wait: false` and configure an [instance webhook with ready-event details](/reference/webhooks#instance-details-on-ready-events). Your backend verifies the event and forwards `instance.status.endpointWebSocketUrl` and `instance.status.token` to the authorized browser. This supplies `<RemoteControl />` without another instance GET. Keep an API fallback for missed events because delivery is best effort.
+The examples below wait for the instance to become ready. To avoid waiting for readiness, set `wait: false` and configure an [instance webhook with ready-event details](/reference/webhooks#instance-details-on-ready-events). Your backend verifies the event and forwards `instance.status.endpointWebSocketUrl` and `instance.status.token` to the authorized browser. This supplies `<RemoteControl />` without another instance GET. If the create response is already ready, you can use its connection details immediately; reusing a ready instance does not generate a new ready event. Keep an API fallback for missed events because delivery is best effort.
 
 <CodeGroup>
 ```ts TypeScript
