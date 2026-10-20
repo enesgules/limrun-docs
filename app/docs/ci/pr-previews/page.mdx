@@ -18,6 +18,14 @@ https://console.limrun.com/preview?asset=<asset-name>&platform=ios
 
 Opening it provisions a fresh simulator and starts streaming while the console installs the build. An `Installing <asset name>` overlay stays visible until installation finishes. Reviewers need no install and no Mac, but they do need to be members of your Limrun organization.
 
+The simulator is an iPhone unless the link says otherwise. Add `model` to open the same build on an iPhone Duo or an iPad:
+
+```text
+https://console.limrun.com/preview?asset=<asset-name>&platform=ios&model=iphone-duo
+```
+
+`model` accepts `iphone`, `iphone-duo`, and `ipad`. Each link provisions its own simulator, so post one link per model when reviewers need to check a build on both an iPhone and an iPhone Duo.
+
 Any build that uploads to Asset Storage produces a previewable asset. From a shell or a coding agent, build with `--upload` and share the resulting URL:
 
 ```bash
@@ -116,7 +124,7 @@ The Action posts a comment titled **Limrun Preview** with a table of the platfor
 | `workspace` | Path to the `.xcworkspace` to build. Derived from the project file when omitted. |
 | `scheme` | Scheme to build. Derived from the project file when omitted. |
 | `sdk` | SDK to build. Defaults to `iphonesimulator`. |
-| `model` | Simulator model for previews: `iphone` (default) or `ipad`. |
+| `model` | Simulator model for previews: `iphone` (default), `iphone-duo`, or `ipad`. |
 | `env` | Newline-delimited `KEY=VALUE` app environment variables for preview launches. Use nonsecret values because they appear in the preview URL. |
 | `open-url` | URL or app deep link to open after the preview app launches. Pass it without URL encoding. |
 | `tunnel` | Name of a [private tunnel](/docs/networking/private-tunnels) the preview simulator attaches to before the app launches. Its connector must be running when a reviewer opens the preview. |
