@@ -283,7 +283,6 @@ const build = xcode.xcodebuild(
       apiPrivateKeyBase64: fs.readFileSync('./AuthKey_2X9R4HXF34.p8').toString('base64'),
     },
     appstore: {
-      appId: '1234567890', // Optional App Store Connect app ID.
       apiKeyId: '2X9R4HXF34',
       apiIssuerId: process.env['ASC_ISSUER_ID'],
       apiPrivateKeyBase64: fs.readFileSync('./AuthKey_2X9R4HXF34.p8').toString('base64'),
@@ -303,9 +302,9 @@ With manual signing, keep the `--certificate-p12`, `--certificate-password`, and
 
 Build with a released Xcode: Apple rejects uploads built with a beta. [Xcode and tool versions](/ios/xcode-and-tools#choose-the-xcode-version) explains how a bare-major pin guarantees that.
 
-### Wait for Apple's verdict
+You can override automatic app selection by passing the App Store Connect app ID as `appstore.appId` in the SDK.
 
-Uploads select the app whose bundle ID exactly matches the built app, including when several apps share a bundle-ID prefix. If no exact match is visible to the API key, the upload fails before reserving a build. To select an app explicitly, pass `appstore.appId` in the SDK. Limrun verifies that app's bundle ID before uploading and uses it for automatic build-number lookup too. The result's `appstore.appId` reports the verified target once resolved, including if a later upload step fails. Older sandbox versions may omit this field.
+### Wait for Apple's verdict
 
 The build log streams the upload progress. By default the build succeeds as soon as the upload commits. Apple's processing routinely takes many minutes, so the verdict is left to App Store Connect, and the build prints the upload ID so you can check it there.
 
@@ -330,7 +329,7 @@ TestFlight delivery requires a signed `iphoneos`, `appletvos`, or `xros` build, 
 | `bundle version must be higher` (or similar Apple text) | The `CFBundleVersion` was already used by an earlier upload. | Rebuild with `--auto-build-number`, or bump the build number manually. |
 | `HTTP 401` from App Store Connect | The key ID, issuer ID, and `.p8` do not belong together, or the key was revoked. | Re-check the three values in App Store Connect. Team keys need the issuer ID; individual keys must omit it. |
 | `HTTP 403` from App Store Connect | The key's role cannot upload builds. | Use a key with the Developer role or higher. |
-| `no App Store Connect app with the exact bundle ID ...` | No app with that exact bundle ID is visible to the API key. | Create the matching app record or check the key's access. Apps sharing only the prefix do not match. |
+| `no App Store Connect app with bundle id ...` | No app record exists for the bundle ID you built. | Create the app record in App Store Connect first (Apps, then the plus button). |
 | Build stuck in "Missing Compliance" | The binary does not answer the export-compliance question. | Set `ITSAppUsesNonExemptEncryption` in `Info.plist` as described above. |
 
 ## Next steps
