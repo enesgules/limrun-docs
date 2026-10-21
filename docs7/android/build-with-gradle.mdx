@@ -183,7 +183,7 @@ const { exitCode, signedDownloadUrl } = await build;
 
 The uploaded asset expires 14 days after the last upload by default. Each build upload pushes the expiry out again, so actively rebuilt assets stay alive. Pass `--upload-ttl` with a Go duration (`ttl` in the SDK) to change the window: `720h` works, `1d` is not valid Go syntax. Assets uploaded with `lim asset push` are unaffected; they never expire unless given a `--ttl`.
 
-The build result includes a signed download URL. Anyone with the URL can download the artifact without a Limrun API key. The signature expires after 15 minutes; fetch a fresh one with `lim asset list --name <asset-name> --download-url`.
+The build result includes a signed download URL. Anyone with the URL can download the artifact without a Limrun API key. The signature expires after an hour; fetch a fresh one with `lim asset list --name <asset-name> --download-url`.
 
 **Upload to your own bucket.** Pass a presigned S3, GCS, or R2 URL and the sandbox PUTs the artifact straight to it, without a round trip through the machine that started the build:
 
@@ -211,7 +211,7 @@ To build on every push from a Linux runner, see [GitHub Actions recipes](/ci/git
 | The first build fails installing a tool it never uses | A project mise file lists tools beyond the build, such as a monorepo's root `mise.toml`. | Add a `mise.limrun.toml` next to it with only the tools the build needs. Limrun reads it instead of that directory's other mise files; only `[tools]` applies. |
 | A running build stops with status `CANCELLED` | Another build or `lim gradle run` started on the same sandbox. | Run one operation at a time per sandbox, or use separate sandboxes. |
 | `--upload-ttl 1d` is rejected | `1d` is not a Go duration. | Use hours, for example `24h`. |
-| The download URL returns an error after a while | Signed download URLs expire after 15 minutes. | Run `lim asset list --name <asset-name> --download-url` for a fresh one. |
+| The download URL returns an error after a while | Signed download URLs expire after an hour. | Run `lim asset list --name <asset-name> --download-url` for a fresh one. |
 
 ## Next steps
 

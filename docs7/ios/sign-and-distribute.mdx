@@ -112,7 +112,7 @@ openssl pkcs12 -export -inkey dist.key -in dist.pem -certfile wwdr.pem -out dist
 
 ### Download the signed IPA
 
-When you configure an upload, the build result includes a signed download URL. Anyone with the URL can download the IPA without a Limrun API key, but the signature expires after 15 minutes, so use it right away and fetch a fresh one later with `lim asset list --name <asset-name> --download-url`. For links reviewers open days later, use [PR previews](/ci/pr-previews).
+When you configure an upload, the build result includes a signed download URL. Anyone with the URL can download the IPA without a Limrun API key, but the signature expires after an hour, so use it soon and fetch a fresh one later with `lim asset list --name <asset-name> --download-url`. For links reviewers open days later, use [PR previews](/ci/pr-previews).
 
 ## Cloud signing
 

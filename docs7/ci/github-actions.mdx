@@ -125,7 +125,7 @@ What the workflow does:
 
 1. Checks out the code on an Ubuntu runner.
 2. Installs the `lim` CLI with `npm`.
-3. Runs a signed release build on a Limrun Gradle sandbox and uploads the AAB under a name tied to the commit. The CLI prints the asset name and a signed download URL, which expires after 15 minutes.
+3. Runs a signed release build on a Limrun Gradle sandbox and uploads the AAB under a name tied to the commit. The CLI prints the asset name and a signed download URL, which expires after an hour.
 4. Deletes the Gradle sandbox the build used, even when the build fails.
 
 To download the AAB later, ask Asset Storage for a fresh signed URL:
