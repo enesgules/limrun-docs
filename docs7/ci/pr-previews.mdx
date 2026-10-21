@@ -74,6 +74,9 @@ reviewer opens the link:
 https://console.limrun.com/preview?asset=my-app.zip&platform=ios&tunnel=staging
 ```
 
+To [keep app state between iOS previews](#keep-app-state-between-previews), add
+`deviceState` to the URL, for example `deviceState=myapp-%7Buser%7D`.
+
 ## Use the packaged Action
 
 [`limrun-inc/ios-preview-action`](https://github.com/limrun-inc/ios-preview-action) wraps the create, build, upload, and PR comment steps into one. Its `post:` step deletes the Xcode sandbox after every run, so no sandbox outlives the job.
@@ -121,7 +124,7 @@ The Action posts a comment titled **Limrun Preview** with a table of the platfor
 | `env` | Newline-delimited `KEY=VALUE` app environment variables for preview launches. Use nonsecret values because they appear in the preview URL. |
 | `open-url` | URL or app deep link to open after the preview app launches. Pass it without URL encoding. |
 | `tunnel` | Name of a [private tunnel](/networking/private-tunnels) the preview simulator attaches to before the app launches. Its connector must be running when a reviewer opens the preview. |
-| `device-state-key` | Name under which the simulator state is saved between previews and shared across your organization. See [Keep reviewers signed in between previews](#keep-reviewers-signed-in-between-previews). |
+| `device-state-key` | Saves and restores simulator state between previews. Include `{user}` for separate state per reviewer. See [Keep app state between previews](#keep-app-state-between-previews). |
 | `xcode-version` | Xcode major to build with, such as `27`. Switching majors invalidates the other version's build state, so the next build starts cold. Defaults to the sandbox default. |
 | `prepare` | Remote shell script after source sync and before xcodebuild. Failure stops the build. |
 | `snapshot-key` | Disk snapshot publication key and default restore key. |
@@ -187,50 +190,40 @@ the preview URL appears in the PR comment, action output, logs, and browser hist
 Set `tunnel` to the name of a [private tunnel](/networking/private-tunnels)
 when the app needs services in your private network.
 
-### Keep reviewers signed in between previews
+### Keep app state between previews
 
-Every preview starts from a fresh simulator, so without further configuration a
-reviewer signs in to the app on every pull request. Set `device-state-key` to a
-name for the app, and the simulator state is saved when a reviewer leaves a
-preview and restored before the app launches on the next one:
+Use `device-state-key` to keep login sessions, app data, and permissions between
+iOS previews. Add it to your preview Action step:
 
 ```yaml
 - uses: limrun-inc/ios-preview-action@main
   with:
     api-key: ${{ secrets.LIM_API_KEY }}
-    device-state-key: myapp
-```
-
-The saved state holds the simulator keychain, which is where login sessions
-live, the app's data container and App Group containers, and the privacy
-permissions that were granted. Caches, `tmp`, and system-managed files are
-not saved, and an app whose remaining data exceeds 256 MiB is left out of the
-save.
-
-The key works like an Xcode disk snapshot key: it belongs to your organization,
-not to a person. Everyone who opens a preview with the same key shares one saved
-state, and the latest save replaces the previous one, so sign in with a shared
-test account rather than a personal one. To give each reviewer their own state
-instead, put `{user}` in the key: the console replaces it with the reviewer's
-email address when they open the link, so `myapp-{user}` saves one state per
-reviewer under one link:
-
-```yaml
     device-state-key: myapp-{user}
 ```
 
-Use one key per app; two apps that share a key share settings but not logins,
-because keychain items belong to the app that wrote them. The key is a name, not
-a secret, and the link that carries it is posted on the pull request for
-everyone.
+The console replaces `{user}` with the reviewer's Limrun email address, giving
+each reviewer separate saved state. Use a stable key for each app across pull
+requests so reviewers can reuse their state on new builds.
 
-Two things happen on their own. An app build older than the one that saved the
-state starts clean, because older builds cannot read newer data. A saved state
-that was written on another iOS major version restores the app's data but not
-the keychain, so the next reviewer signs in once more and the next save replaces
-it. A reviewer can save at any time with **Save now** in the preview, and can
-keep their session out of the shared state with **Don't save state from this
-device**. Saved states that nobody opened for 30 days are deleted.
+The first preview starts fresh. Limrun saves the state when the simulator
+terminates and restores it before the app launches in the next preview.
+Each save replaces the previous state under that key.
+
+Keys belong to your organization. To share one saved state across reviewers,
+omit `{user}`, for example `device-state-key: myapp-shared`. Everyone using that
+key restores the same state, including its login. Use a shared test account.
+The key appears in the preview URL, so do not put secrets in it.
+
+Reviewers have two controls in the preview:
+
+- **Save now** saves the current state immediately. Saving closes and reopens
+  running apps.
+- **Don't save state from this device** disables saving and restoring for future
+  previews in that browser. The current preview still saves when it terminates.
+
+See [Device state](/reference/instances#device-state) for what is saved,
+size limits, and version compatibility.
 
 ### Bazel projects
 

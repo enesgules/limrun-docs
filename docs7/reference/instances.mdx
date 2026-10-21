@@ -127,13 +127,33 @@ The `spec` fields accepted by `iosInstances.create` (TypeScript names; Python us
 | `spec.tunnel` | string | Name of a [private tunnel](/networking/private-tunnels). The instance reaches the tunnel's selectors through its connector. Creation fails when the tunnel does not exist, no connector holds it, or it does not attach within 30 seconds, and the instance becomes ready only after the tunnel attaches. TypeScript SDK, CLI, and REST only. |
 | `spec.forceBundleId` | string | After this app first enters the foreground, Limrun brings it back whenever it is closed or backgrounded. It does not launch the app at startup. |
 | `spec.clues[]` | array | Placement hints: `ClientIP` with the end user's IP, or `ClientLocation` with coordinates (TypeScript SDK and REST only). See [Client location clues](#client-location-clues). |
-| `spec.deviceState.key` | string | Restores your organization's saved simulator state under this key at start and saves it at termination: the keychain, each third-party app's settings and local data, and its privacy grants. One saved state per organization and key, shared by every instance created with it; a save replaces the previous one, like an Xcode disk snapshot. Meant for [PR previews](/ci/pr-previews#keep-reviewers-signed-in-between-previews). REST only today. The create response reports the restore in `status.deviceState.restore.phase` (`restored`, `empty`, or `failed`, never fatal). |
+| `spec.deviceState.key` | string | Key for restoring simulator state at startup and saving it at termination. Shared within your organization; each save replaces the previous state. REST only. See [Device state](#device-state). |
 | `spec.initialAssets[]` | array | Apps or keychain state to apply at boot. App entries use `kind: 'App'` with `source` `URL`, `AssetName`, or `AssetID`, plus an optional `launchMode` of `ForegroundIfRunning` or `RelaunchIfRunning`; omit `launchMode` to install without launching. Keychain entries use `kind: 'Keychain'` and require `encryptionKey`. See [Pre-install at boot](/platform/asset-storage#pre-install-at-boot) and [Save and restore the keychain](/ios/run-simulator#save-and-restore-the-keychain). |
 | `spec.sandbox.xcode.enabled` | boolean | Legacy: create an embedded Xcode sandbox with the simulator. The API still accepts it for old clients, but the TypeScript SDK (from 0.54.0) and CLI (from 0.35.0) no longer offer it. Create the sandbox separately and attach instead; see [Move off the embedded Xcode sandbox](/ios/build-with-xcode#move-off-the-embedded-xcode-sandbox). |
 
 <Frame>
   <img src="/images/console/03-ios-models.png" alt="Console Playground iOS model picker showing iPhone, iPad, and Apple Watch options" />
 </Frame>
+
+### Device state
+
+Device state saves the simulator keychain, installed apps' data and App Group
+containers, and supported privacy permissions. For setup, see
+[Keep app state between previews](/ci/pr-previews#keep-app-state-between-previews).
+
+- Caches, temporary files, logs, and system-managed files are excluded. An app's
+  data and App Group containers are skipped if their combined saved contents
+  exceed 256 MiB.
+- App data and permissions are not restored to an older app version or build.
+  The keychain is restored separately.
+- When no iOS version is requested, Limrun uses the saved state's iOS major
+  version if available. If the simulator uses a different major version, it
+  starts without the saved state.
+
+The create response reports `status.deviceState.restore.phase` as `restored`,
+`empty`, or `failed`. It can report `pending` if the call returns before the
+restore finishes. A failed restore does not prevent the simulator from becoming
+ready. Get and list responses do not include this status.
 
 ## Android spec
 
