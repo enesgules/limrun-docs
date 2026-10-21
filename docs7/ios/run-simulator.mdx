@@ -733,9 +733,32 @@ await client.stopRecording({ presignedUrl: '<your-s3-upload-url>' });
 
 Recordings include touch ripples and drag trails by default on iPhone and iPad simulators. To omit them, use `lim ios record start --no-touch-indicators` or pass `touchIndicators: false` to `client.startRecording()`.
 
-Indicators also appear in live views and screenshots while recording. They turn off when recording stops or fails. Reconnecting a viewer preserves the recording's setting. Each new recording defaults to indicators enabled.
+Indicators also appear in live views and screenshots while recording. They turn off when the last recording stops or all recordings fail. Reconnecting a viewer preserves the recording's setting. Each new recording defaults to indicators enabled.
 
 TypeScript only: `stopRecording` can save to a local file and hand the bytes to a presigned URL in the same call.
+
+### Review snippets during a full recording
+
+Use TypeScript recording sessions to download snippets while a full bug reproduction keeps recording. Each start returns a recording ID. Stop a snippet by its ID, then send the downloaded file to your video model:
+
+```ts
+const full = await client.startRecordingSession({ quality: 5 });
+
+const snippet = await client.startRecordingSession({ quality: 5 });
+// Perform the actions you want the model to review.
+await client.stopRecordingSession(snippet, { localPath: 'snippet.mp4' });
+
+// Send snippet.mp4 to your model. The full recording continues.
+// Repeat the snippet start and stop calls as needed.
+
+await client.stopRecordingSession(full, { localPath: 'full-repro.mp4' });
+```
+
+Wait for each start call before performing the actions it should capture. The call resolves when the recording has its first keyframe. Each recording can stop independently, including the one you started first.
+
+Concurrent recordings must use the same `quality`, `display`, and `touchIndicators`. The defaults are quality `5`, following the active Duo display, and touch indicators enabled. Omit `display` on every recording to follow display activity, or use the same explicit display on each one. Up to eight recordings can be active or uploading at once. Each completed session has its own download URL, protected by the instance token and available until the instance terminates. `stopRecordingSession` also accepts `presignedUrl`, and `startRecordingSession` accepts `persist` to save the recording with Limrun.
+
+This requires an iOS runtime and TypeScript SDK with recording-session support.
 
 ### Keep captures after the session
 
