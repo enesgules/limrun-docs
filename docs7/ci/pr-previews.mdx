@@ -75,7 +75,7 @@ https://console.limrun.com/preview?asset=my-app.zip&platform=ios&tunnel=staging
 ```
 
 To [keep app state between iOS previews](#keep-app-state-between-previews), add
-`deviceState` to the URL, for example `deviceState=myapp-%7Buser%7D`.
+`simulatorSnapshot` to the URL, for example `simulatorSnapshot=myapp-%7Buser%7D`.
 
 ## Use the packaged Action
 
@@ -124,7 +124,7 @@ The Action posts a comment titled **Limrun Preview** with a table of the platfor
 | `env` | Newline-delimited `KEY=VALUE` app environment variables for preview launches. Use nonsecret values because they appear in the preview URL. |
 | `open-url` | URL or app deep link to open after the preview app launches. Pass it without URL encoding. |
 | `tunnel` | Name of a [private tunnel](/networking/private-tunnels) the preview simulator attaches to before the app launches. Its connector must be running when a reviewer opens the preview. |
-| `device-state-key` | Saves and restores simulator state between previews. Include `{user}` for separate state per reviewer. See [Keep app state between previews](#keep-app-state-between-previews). |
+| `simulator-snapshot-key` | Saves and restores simulator app data, keychain, and permissions between previews. Include `{user}` for a separate snapshot per reviewer. See [Keep app state between previews](#keep-app-state-between-previews). |
 | `xcode-version` | Xcode major to build with, such as `27`. Switching majors invalidates the other version's build state, so the next build starts cold. Defaults to the sandbox default. |
 | `prepare` | Remote shell script after source sync and before xcodebuild. Failure stops the build. |
 | `snapshot-key` | Disk snapshot publication key and default restore key. |
@@ -192,27 +192,28 @@ when the app needs services in your private network.
 
 ### Keep app state between previews
 
-Use `device-state-key` to keep login sessions, app data, and permissions between
+Use `simulator-snapshot-key` to keep login sessions, app data, and permissions between
 iOS previews. Add it to your preview Action step:
 
 ```yaml
 - uses: limrun-inc/ios-preview-action@main
   with:
     api-key: ${{ secrets.LIM_API_KEY }}
-    device-state-key: myapp-{user}
+    simulator-snapshot-key: myapp-{user}
 ```
 
 The console replaces `{user}` with the reviewer's Limrun email address, giving
-each reviewer separate saved state. Use a stable key for each app across pull
-requests so reviewers can reuse their state on new builds.
+each reviewer a separate snapshot. Use a stable key for each app across pull
+requests so reviewers can reuse it on new builds.
 
-The first preview starts fresh. Limrun saves the state when the simulator
-terminates and restores it before the app launches in the next preview.
-Each save replaces the previous state under that key.
+The console installs the apps, restores the snapshot, then launches the apps.
+The first preview starts fresh. Once setup succeeds, Limrun saves a snapshot
+when the simulator terminates. Each save replaces the previous snapshot under
+that key. Failed or interrupted setup leaves the previous snapshot untouched.
 
-Keys belong to your organization. To share one saved state across reviewers,
-omit `{user}`, for example `device-state-key: myapp-shared`. Everyone using that
-key restores the same state, including its login. Use a shared test account.
+Keys belong to your organization. To share one snapshot across reviewers,
+omit `{user}`, for example `simulator-snapshot-key: myapp-shared`. Everyone using
+that key restores the same state, including its login. Use a shared test account.
 The key appears in the preview URL, so do not put secrets in it.
 
 Reviewers have two controls in the preview:
@@ -222,7 +223,10 @@ Reviewers have two controls in the preview:
 - **Don't save state from this device** disables saving and restoring for future
   previews in that browser. The current preview still saves when it terminates.
 
-See [Device state](/reference/instances#device-state) for what is saved,
+`device-state-key` and the `deviceState` URL parameter remain supported as aliases.
+This snapshot is separate from the Xcode workspace snapshot set by `snapshot-key`.
+
+See [Simulator snapshots](/reference/instances#simulator-snapshots) for what is saved,
 size limits, and version compatibility.
 
 ### Bazel projects

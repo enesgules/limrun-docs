@@ -127,7 +127,8 @@ The `spec` fields accepted by `iosInstances.create` (TypeScript names; Python us
 | `spec.tunnel` | string | Name of a [private tunnel](/docs/networking/private-tunnels). The instance reaches the tunnel's selectors through its connector. Creation fails when the tunnel does not exist, no connector holds it, or it does not attach within 30 seconds, and the instance becomes ready only after the tunnel attaches. TypeScript SDK, CLI, and REST only. |
 | `spec.forceBundleId` | string | After this app first enters the foreground, Limrun brings it back whenever it is closed or backgrounded. It does not launch the app at startup. |
 | `spec.clues[]` | array | Placement hints: `ClientIP` with the end user's IP, or `ClientLocation` with coordinates (TypeScript SDK and REST only). See [Client location clues](#client-location-clues). |
-| `spec.deviceState.key` | string | Key for restoring simulator state at startup and saving it at termination. Shared within your organization; each save replaces the previous state. REST only. See [Device state](#device-state). |
+| `spec.deviceState.key` | string | Simulator snapshot key. Shared within your organization; each save replaces the previous snapshot. REST only. See [Simulator snapshots](#simulator-snapshots). |
+| `spec.deviceState.restoreMode` | `'server' \| 'client'` | Default `server`: restores before readiness. `client`: lets the caller install apps and restore after readiness; saving requires a preparation acknowledgment. REST only. |
 | `spec.initialAssets[]` | array | Apps or keychain state to apply at boot. App entries use `kind: 'App'` with `source` `URL`, `AssetName`, or `AssetID`, plus an optional `launchMode` of `ForegroundIfRunning` or `RelaunchIfRunning`; omit `launchMode` to install without launching. Keychain entries use `kind: 'Keychain'` and require `encryptionKey`. See [Pre-install at boot](/docs/platform/asset-storage#pre-install-at-boot) and [Save and restore the keychain](/docs/ios/run-simulator#save-and-restore-the-keychain). |
 | `spec.sandbox.xcode.enabled` | boolean | Legacy: create an embedded Xcode sandbox with the simulator. The API still accepts it for old clients, but the TypeScript SDK (from 0.54.0) and CLI (from 0.35.0) no longer offer it. Create the sandbox separately and attach instead; see [Move off the embedded Xcode sandbox](/docs/ios/build-with-xcode#move-off-the-embedded-xcode-sandbox). |
 
@@ -135,9 +136,9 @@ The `spec` fields accepted by `iosInstances.create` (TypeScript names; Python us
   <img src="/images/console/03-ios-models.png" alt="Console Playground iOS model picker showing iPhone, iPad, and Apple Watch options" />
 </Frame>
 
-### Device state
+### Simulator snapshots
 
-Device state saves the simulator keychain, installed apps' data and App Group
+Simulator snapshots save the keychain, installed apps' data and App Group
 containers, and supported privacy permissions. For setup, see
 [Keep app state between previews](/docs/ci/pr-previews#keep-app-state-between-previews).
 
@@ -150,10 +151,24 @@ containers, and supported privacy permissions. For setup, see
   version if available. If the simulator uses a different major version, it
   starts without the saved state.
 
-The create response reports `status.deviceState.restore.phase` as `restored`,
-`empty`, or `failed`. It can report `pending` if the call returns before the
-restore finishes. A failed restore does not prevent the simulator from becoming
-ready. Get and list responses do not include this status.
+Preview links use client restoration. To use the same flow through the REST API:
+
+1. Create an instance with `spec.deviceState: { key: "myapp", restoreMode: "client" }`
+   and wait for it to become ready.
+2. Install each app without launching it.
+3. Pass `status.deviceState.restore.downloadUrl` from the create response to the
+   simulator's `importDeviceState` signaling command. An empty URL means there is
+   no compatible snapshot; skip restoration.
+4. Launch the apps, then send `POST /v1/ios_instances/{id}/device_state/ready`
+   with no body. This enables manual saving and saving at termination.
+
+If setup fails, do not send the preparation acknowledgment. The previous snapshot
+stays unchanged. The download URL is temporary; do not log or share it.
+
+Without `restoreMode: "client"`, restoration runs before readiness. The create
+response reports `status.deviceState.restore.phase` as `restored`, `empty`, or
+`failed`, or `pending` if the call returns early. In this mode, a failed restore
+does not prevent readiness. Get and list responses do not include snapshot status.
 
 ## Android spec
 
