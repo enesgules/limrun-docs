@@ -209,10 +209,19 @@ save.
 The key works like an Xcode disk snapshot key: it belongs to your organization,
 not to a person. Everyone who opens a preview with the same key shares one saved
 state, and the latest save replaces the previous one, so sign in with a shared
-test account rather than a personal one. Use one key per app; two apps that
-share a key share settings but not logins, because keychain items belong to the
-app that wrote them. The key is a name, not a secret, and the link that carries
-it is posted on the pull request for everyone.
+test account rather than a personal one. To give each reviewer their own state
+instead, put `{user}` in the key: the console replaces it with the reviewer's
+email address when they open the link, so `myapp-{user}` saves one state per
+reviewer under one link:
+
+```yaml
+    device-state-key: myapp-{user}
+```
+
+Use one key per app; two apps that share a key share settings but not logins,
+because keychain items belong to the app that wrote them. The key is a name, not
+a secret, and the link that carries it is posted on the pull request for
+everyone.
 
 Two things happen on their own. An app build older than the one that saved the
 state starts clean, because older builds cannot read newer data. A saved state
