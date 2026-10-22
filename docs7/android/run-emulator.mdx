@@ -678,6 +678,36 @@ const url = await client.stopRecording({ localPath: '/tmp/demo.mp4' });
 - **Your bucket.** `stopRecording({ presignedUrl })`. The instance PUTs directly to your URL; the SDK only waits for that upload.
 - **Just the URL.** `stopRecording({})`. Resolves with the download URL; fetch the bytes later with `Authorization: Bearer ${status.token}`.
 
+### Multiple recordings
+
+Each recording can start and stop independently. Both commands accept an optional recording ID:
+
+```bash
+lim android record start run-1
+lim android record start run-2
+lim android record stop -o run-2.mp4
+lim android record stop run-1 -o run-1.mp4
+```
+
+`start` generates an ID when you omit it and prints the ID after recording begins. With `--json`, the response includes `recordingId`. `stop` without an ID selects the most recently started recording that is still active. It skips recordings already stopping or uploading and leaves other recordings running. If none are active, it returns an error. `--id` continues to select the instance.
+
+IDs use 1 to 64 lowercase letters, digits, underscores, or hyphens and start with a letter or digit. An ID cannot be reused during the instance lifetime, so completed recordings keep their original contents.
+
+The TypeScript client exposes the same controls:
+
+```ts
+const first = await client.startRecordingSession({ recordingId: 'run-1', quality: 5 });
+const second = await client.startRecordingSession({ quality: 5 });
+// Perform the actions to record.
+await client.stopRecordingSession(undefined, { localPath: 'latest.mp4' });
+// Other recordings keep running.
+await client.stopRecordingSession(first, { localPath: 'run-1.mp4' });
+```
+
+Wait for each start to resolve before performing the actions it should capture. Concurrent recordings must use the same quality. Up to eight recordings can be active or uploading. Each completed recording has its own authenticated download URL, available until the instance terminates. `stopRecordingSession` also accepts `presignedUrl`, and `startRecordingSession` accepts `persist`.
+
+This requires a runtime and CLI or TypeScript SDK with recording-session support.
+
 ## Control the device
 
 Input actions take an `AndroidElementTarget`, which carries either a selector or explicit coordinates:
