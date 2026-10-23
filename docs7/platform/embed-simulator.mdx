@@ -451,7 +451,7 @@ These are browser-side controls. For richer control from your server, such as ta
 
 ## iPad and Apple Watch
 
-`showFrame` ships device art for iPhone, iPad, Apple Watch, Pixel 9, and Pixel Tablet. Starting in 0.18.0, `RemoteControl` shows an iPhone frame while device information loads, then selects the matching iOS frame. The iPad frame follows portrait and landscape rotation. Both iPad and Watch frames fit the actual video aspect ratio. The Watch crown, side button, and band are decorative; interact with the screen as usual.
+`showFrame` ships device art for iPhone, iPad, Apple Watch, Pixel 9, and Pixel Tablet. Starting in 0.18.0, `RemoteControl` shows an iPhone frame while device information loads, then selects the matching iOS frame. The iPad frame follows portrait and landscape rotation. Both iPad and Watch frames fit the actual video aspect ratio. The Watch uses a dark, bandless case based on Simulator's appearance. Its crown and side button are decorative; interact with the screen as usual.
 
 To supply custom iOS artwork, set `assets.ios.tabletFrame`, `tabletFrameLandscape`, or `watchFrame` and match the bundled SVGs' centered screen openings. The lite entry includes no artwork. A missing device-specific asset renders frameless.
 
