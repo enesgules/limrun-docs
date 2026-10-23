@@ -20,7 +20,7 @@ Opening the link takes the reviewer to Playground with the app and launch settin
 
 Start provisions a fresh simulator and begins streaming while the console installs the build. An `Installing <asset name>` overlay stays visible until installation finishes. The device uses the same Playground controls and inspectors, including **Inspect**, **Connect**, and **Stop**.
 
-The optional `model` parameter preselects `iphone`, `iphone-duo`, `ipad`, or `watch`. To share the edited configuration, open the dropdown beside **Start device** and choose **Copy as URL** in Playground.
+The optional `model` parameter preselects `iphone`, `iphone-duo`, `ipad`, or `watch`. To share the edited configuration, choose **Copy** then **Copy as URL** in Playground.
 
 Links default to iPhone. For example, this link preselects iPhone Duo:
 
@@ -84,22 +84,6 @@ reviewer opens the link:
 ```text
 https://console.limrun.com/stream?asset=my-app.zip&platform=ios&tunnel=staging
 ```
-
-## Reuse saved device state
-
-Add `deviceState=checkout` to a preview link to restore and save simulator state under that key. In Playground, **Saved device state** offers **None**, existing keys in the selected organization, and **New state…**. A new key is registered when the device starts. Choose **None** to start without saved state.
-
-Keys are shared within the organization. Use `deviceState=checkout-%7Buser%7D` for a separate key per reviewer's email address. Preview links preserve these `{user}` templates until launch.
-
-To list registered keys through the API, use an organization credential with `ios:*:read`:
-
-```bash
-curl --get "https://api.limrun.com/v1/organizations/${ORGANIZATION_ID}/ios_device_states" \
-  -H "Authorization: Bearer ${LIM_API_KEY}" \
-  --data-urlencode "limit=50"
-```
-
-The response contains `states` with `id`, `key`, `createdAt`, and `lastUsedAt`. If `nextCursor` is present, pass it as `cursor` to fetch the next page. The page limit is 1–100, defaulting to 50. A registered key may not have a saved archive yet; its first simulator starts clean.
 
 ## Use the packaged Action
 
