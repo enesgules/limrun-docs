@@ -110,8 +110,18 @@ Reviewers have two controls in the preview:
 The `simulatorSnapshot` and `deviceState` URL parameters remain supported as
 aliases. If you supply more than one, their values must match.
 
-In the packaged Action, the `snapshot-key` input still saves the Xcode build
-workspace. Use the URL parameter above to select a simulator snapshot.
+With the packaged Action, set `simulator-snapshot-key`. You can also set
+`xcode-snapshot-key` to reuse the Xcode build workspace:
+
+```yaml
+with:
+  api-key: ${{ secrets.LIM_API_KEY }}
+  simulator-snapshot-key: myapp-{user}
+  xcode-snapshot-key: ios-${{ github.repository_id }}-pr-${{ github.event.pull_request.number }}-workspace
+```
+
+The Action puts the simulator key in the Preview URL as `snapshot-key`. Each
+input can be used on its own.
 
 See [Simulator snapshots](/docs/reference/instances#simulator-snapshots) for what is saved,
 size limits, and version compatibility.
@@ -146,7 +156,7 @@ jobs:
         with:
           project-path: .
           api-key: ${{ secrets.LIM_API_KEY }}
-          snapshot-key: ios-${{ github.repository_id }}-pr-${{ github.event.pull_request.number }}-workspace
+          xcode-snapshot-key: ios-${{ github.repository_id }}-pr-${{ github.event.pull_request.number }}-workspace
 ```
 
 The Action posts a comment titled **Limrun Preview** with a table of the platform, the short commit SHA, and the preview link, and updates that same comment on later pushes. With `closed` in `on.pull_request.types`, the run on merge or close deletes the PR's Xcode sandboxes and changes the comment to say the preview was removed. The preview asset itself stays until its TTL expires, 14 days after the last upload by default.
@@ -163,16 +173,22 @@ The Action posts a comment titled **Limrun Preview** with a table of the platfor
 | `env` | Newline-delimited `KEY=VALUE` app environment variables for preview launches. Use nonsecret values because they appear in the preview URL. |
 | `open-url` | URL or app deep link to open after the preview app launches. Pass it without URL encoding. |
 | `tunnel` | Name of a [private tunnel](/docs/networking/private-tunnels) the preview simulator attaches to before the app launches. Its connector must be running when a reviewer opens the preview. |
+| `simulator-snapshot-key` | Saves and restores installed simulator apps, their data, keychain, and supported permissions. Include `{user}` for a separate snapshot per reviewer. See [Keep app state between previews](#keep-app-state-between-previews). |
 | `xcode-version` | Xcode major to build with, such as `27`. Switching majors invalidates the other version's build state, so the next build starts cold. Defaults to the sandbox default. |
 | `prepare` | Remote shell script after source sync and before xcodebuild. Failure stops the build. |
-| `snapshot-key` | Disk snapshot publication key and default restore key. |
-| `snapshot-restore-keys` | One snapshot restore key per line, tried in order. |
-| `snapshot-paths` | One project-relative path per line. Omit to save the whole workspace. |
+| `xcode-snapshot-key` | Disk snapshot publication key and default restore key. |
+| `xcode-snapshot-restore-keys` | One snapshot restore key per line, tried in order. |
+| `xcode-snapshot-paths` | One project-relative path per line. Omit to save the whole workspace. |
 | `build-settings` | Newline-delimited `KEY=VALUE` Xcode build settings. Keys follow the same rules as `--build-setting`; see [Pass build settings](/docs/ios/build-with-xcode#pass-build-settings). Use `$(inherited)` to append. |
 | `bazel-target` | Bazel label of the app target, such as `//App`. Inferred for single-app workspaces. |
 | `github-token` | Token for posting the PR comment. Defaults to `github.token`. |
 | `media` | Newline-delimited image or video paths to show in the PR body. Add `#alt text` after an image path. Requires `media-token` and `gh` 2.99.0 or newer on the runner. |
 | `media-token` | User token (personal access token or OAuth) with write access to the repository, used only to upload media. GitHub rejects `github.token` for attachments. |
+
+The older `device-state-key` input remains an alias for `simulator-snapshot-key`.
+The older `snapshot-key`, `snapshot-restore-keys`, and `snapshot-paths` inputs remain
+aliases for their `xcode-` equivalents. If you set an input and its alias,
+their values must match.
 
 The Action sets two outputs: `preview-url` and `asset-name`. Its `action.yml` also declares `asset-id`, but the Action never sets it, so that output is always empty.
 
@@ -190,7 +206,7 @@ xcodebuild. For a CocoaPods project:
 ```yaml
 with:
   api-key: ${{ secrets.LIM_API_KEY }}
-  snapshot-key: ios-${{ github.repository_id }}-pr-${{ github.event.pull_request.number }}-workspace
+  xcode-snapshot-key: ios-${{ github.repository_id }}-pr-${{ github.event.pull_request.number }}-workspace
   prepare: |
     bundle install
     bundle exec pod install
@@ -200,8 +216,8 @@ This uses the same command API as `lim xcode run`, with `/bin/sh` and `set -e`,
 from the synced project root. A failed preparation stops the build and still
 cleans up the sandbox. App-launch `env` is separate from preparation.
 
-`snapshot-restore-keys` accepts an ordered multiline list of fallback keys;
-include the destination key to try it first. `snapshot-paths` accepts one
+`xcode-snapshot-restore-keys` accepts an ordered multiline list of fallback keys;
+include the destination key to try it first. `xcode-snapshot-paths` accepts one
 project-relative path per line. Leave it unset to preserve the whole workspace,
 including DerivedData and source sync state. See [Disk snapshots](/docs/ios/snapshots)
 for publication conditions and restore matching.
@@ -240,7 +256,7 @@ The same Action handles Bazel workspaces. When `project-path` is a Bazel workspa
     api-key: ${{ secrets.LIM_API_KEY }}
 ```
 
-The xcodebuild-only inputs (`project`, `workspace`, `scheme`, `build-settings`, `prepare`, and snapshot inputs) fail the run in Bazel mode. Put your Bazel flags in `user.limrun.bazelrc` at the workspace root instead.
+The xcodebuild-only inputs (`project`, `workspace`, `scheme`, `build-settings`, `prepare`, and Xcode snapshot inputs) fail the run in Bazel mode. Put your Bazel flags in `user.limrun.bazelrc` at the workspace root instead.
 
 ## Android preview action
 
