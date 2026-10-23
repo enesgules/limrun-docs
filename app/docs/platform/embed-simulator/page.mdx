@@ -334,7 +334,7 @@ Automatic iOS frame selection and `onDeviceInfoChange` require `@limrun/ui` 0.18
 | `token` | string | required | Instance token. Pass `instance.status.token`. The component appends it to the connection URL as `?token=…`. |
 | `sessionId` | string | random | A unique signaling-session identifier. Prevents collisions when several browser tabs resolve to the same reused instance. Create it once per mount, for example with `useState` and `crypto.randomUUID()` as in the example above; a value that changes between renders restarts the stream. |
 | `openUrl` | string | none | A URL or deep link to open on the device once the component is ready, such as `https://example.com`, `myapp://orders/42`, or `exp://…` for Expo Go. |
-| `showFrame` | boolean | automatic | iOS starts with an iPhone frame, then updates it from runtime device information; iPad and Apple Watch render frameless once identified. Set this explicitly to override automatic selection. Android retains its phone/tablet frame behavior. |
+| `showFrame` | boolean | automatic | iOS starts with an iPhone frame, then selects the iPhone, iPad, or Apple Watch artwork from runtime device information. Set this explicitly to override automatic selection. Android retains its phone/tablet frame behavior. |
 | `assets` | object | bundled frames | Device frame and boot-logo images. The default entry bundles Limrun's frames; the `@limrun/ui/lite` entry omits them so a frameless embed stays small. |
 | `autoReconnect` | boolean | `false` | Reconnect automatically when a working session's connection drops, instead of showing the Retry button. |
 | `onConnectionStateChange` | callback | none | Reports the coarse connection state, `connecting`, `connected`, `reconnecting`, `failed`, or `terminated`, for status UI outside the component. |
@@ -450,7 +450,11 @@ These are browser-side controls. For richer control from your server, such as ta
 
 ## iPad and Apple Watch
 
-`showFrame` ships device art for iPhone (iOS), Pixel 9 (Android phone), and Pixel Tablet (Android tablet). iPad and Apple Watch have no dedicated frame. Starting in 0.18.0, `RemoteControl` shows an iPhone frame while device information loads, then renders iPad and Apple Watch frameless once identified. Explicit `showFrame={false}` also works with earlier versions:
+`showFrame` ships device art for iPhone, iPad, Apple Watch, Pixel 9, and Pixel Tablet. Starting in 0.18.0, `RemoteControl` shows an iPhone frame while device information loads, then selects the matching iOS frame. The iPad frame follows portrait and landscape rotation. Both iPad and Watch frames fit the actual video aspect ratio. The Watch crown, side button, and band are decorative; interact with the screen as usual.
+
+To supply custom iOS artwork, set `assets.ios.tabletFrame`, `tabletFrameLandscape`, or `watchFrame` and match the bundled SVGs' centered screen openings. The lite entry includes no artwork. A missing device-specific asset renders frameless.
+
+Use `showFrame={false}` to hide device art:
 
 ```tsx
 <RemoteControl
