@@ -175,8 +175,24 @@ Snapshots have these limits:
 By default, restoration runs before readiness. The create response reports
 `status.deviceState.restore.phase` as `restored`, `empty`, or `failed`, or `pending`
 if the call returns early. A failed restore can leave partial state on the new
-simulator, but saving stays disabled to protect the previous snapshot. Get and
-list responses do not include snapshot status.
+simulator, but saving stays disabled to protect the previous snapshot. Instance
+get and list responses do not include restore or save progress.
+
+To inspect saved archives, open [Snapshots](https://console.limrun.com/snapshots?type=ios)
+and select **iOS simulators**. The list shows saved status, compressed size, last
+save time, iOS version, and last use. Open a key for its details and a reusable
+Preview link.
+
+The REST API exposes the same information:
+
+| Endpoint | Result |
+|---|---|
+| `GET /v1/organizations/{organizationId}/ios_snapshots` | Snapshot keys in alphabetical order. Use `prefix` to filter, `limit` to set the page size, and the returned `nextOffset` as the next request's `offset`. The default limit is 25 and the maximum is 100. |
+| `GET /v1/organizations/{organizationId}/ios_snapshots/{key}` | Current archive information for one URL-encoded key. |
+
+Both endpoints require iOS read access in the organization. A key can exist before
+its first save; `saved: false` means it has no archive. `publishedAt` is the last
+save time, while `lastUsedAt` is when a simulator last resolved the key.
 
 With `restoreMode: "client"`, the caller controls restoration after readiness:
 
