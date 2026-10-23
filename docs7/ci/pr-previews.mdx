@@ -19,9 +19,9 @@ https://console.limrun.com/stream?asset=<asset-name>&platform=ios
 
 Opening the link takes the reviewer to Playground with the app and launch settings filled in. The console automatically selects an organization that owns the linked apps. Reviewers can change the device model, apps, labels, tunnel, environment variables, URL to open, and inactivity timeout before clicking **Start**. Reviewers need no install and no Mac, but they do need to be members of your Limrun organization.
 
-Start provisions a fresh simulator and begins streaming while the console installs the build. An `Installing <asset name>` overlay stays visible until installation finishes. The device uses the same Playground controls and inspectors, including **Inspect**, **Connect**, and **Stop**.
+Start checks that the selected apps are available before provisioning a fresh simulator, then begins streaming while the console installs and launches each app in order. An `Installing <asset name>` overlay stays visible until installation finishes. The device uses the same Playground controls and inspectors, including **Inspect**, **Connect**, and **Stop**.
 
-The optional `model` parameter preselects `iphone`, `iphone-duo`, `ipad`, or `watch`. To share the edited configuration, choose **Copy** then **Copy as URL** in Playground.
+The optional `model` parameter preselects `iphone`, `iphone-duo`, `ipad`, or `watch`. To share the edited configuration, open the dropdown beside **Start device** and choose **Copy as URL** in Playground.
 
 Links default to iPhone. For example, this link preselects iPhone Duo:
 
@@ -74,7 +74,15 @@ https://console.limrun.com/stream?asset=my-app.zip&platform=ios&openUrl=myapp%3A
 
 The stream stays visible while the app installs, launches, and opens the URL.
 The overlay disappears when these steps finish. If a step fails, the error
-appears over the stream.
+appears over the stream. Choose **Resume setup** to retry the unfinished app and
+continue on the same device. Completed apps are not reinstalled. If only opening
+the URL failed, resuming retries that step.
+
+Keep the tab open until setup finishes. Refreshing interrupts the remaining steps;
+the same tab remembers its progress and offers **Resume setup** when you return
+to the device. Closing the tab can discard that progress. **Stop** cancels the
+remaining setup and terminates the device. These behaviors also apply when
+starting directly from Playground.
 
 Add `tunnel` with the name of a [private tunnel](/networking/private-tunnels)
 when the app needs services in your private network, such as a staging API behind
