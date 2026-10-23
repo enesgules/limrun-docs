@@ -73,8 +73,48 @@ reviewer opens the link:
 https://console.limrun.com/preview?asset=my-app.zip&platform=ios&tunnel=staging
 ```
 
-To [keep app state between iOS previews](#keep-app-state-between-previews), add
-`simulatorSnapshot` to the URL, for example `simulatorSnapshot=myapp-%7Buser%7D`.
+## Keep app state between previews
+
+Add `snapshot-key` to a preview URL to keep installed apps, login sessions, app
+data, and permissions between iOS previews:
+
+```text
+https://console.limrun.com/preview?asset=my-app.zip&platform=ios&snapshot-key=myapp-%7Buser%7D
+```
+
+The console replaces `{user}` with the reviewer's Limrun email address, giving
+each reviewer a separate snapshot. Use a stable key across pull requests so
+reviewers can reuse their simulator state on new builds.
+
+The console restores all saved apps and their state, then installs and launches
+the preview build. A newer build updates the app while keeping its data. Other
+apps stay installed with their saved state.
+
+The first preview starts fresh. After restoration completes, Limrun saves a
+snapshot when the simulator terminates. Each save replaces the previous snapshot
+under that key. A failed or interrupted restore leaves the previous snapshot
+untouched.
+
+Keys belong to your organization. To share one snapshot across reviewers,
+omit `{user}`, for example `snapshot-key=myapp-shared`. Everyone using
+that key restores the same state, including its login. Use a shared test account.
+The key appears in the preview URL, so do not put secrets in it.
+
+Reviewers have two controls in the preview:
+
+- **Save now** saves the current state immediately. Saving closes and reopens
+  running apps.
+- **Don't save state from this device** disables saving and restoring for future
+  previews in that browser. The current preview still saves when it terminates.
+
+The `simulatorSnapshot` and `deviceState` URL parameters remain supported as
+aliases. If you supply more than one, their values must match.
+
+In the packaged Action, the `snapshot-key` input still saves the Xcode build
+workspace. Use the URL parameter above to select a simulator snapshot.
+
+See [Simulator snapshots](/docs/reference/instances#simulator-snapshots) for what is saved,
+size limits, and version compatibility.
 
 ## Use the packaged Action
 
@@ -123,7 +163,6 @@ The Action posts a comment titled **Limrun Preview** with a table of the platfor
 | `env` | Newline-delimited `KEY=VALUE` app environment variables for preview launches. Use nonsecret values because they appear in the preview URL. |
 | `open-url` | URL or app deep link to open after the preview app launches. Pass it without URL encoding. |
 | `tunnel` | Name of a [private tunnel](/docs/networking/private-tunnels) the preview simulator attaches to before the app launches. Its connector must be running when a reviewer opens the preview. |
-| `simulator-snapshot-key` | Saves and restores installed simulator apps, their data, keychain, and permissions between previews. Include `{user}` for a separate snapshot per reviewer. See [Keep app state between previews](#keep-app-state-between-previews). |
 | `xcode-version` | Xcode major to build with, such as `27`. Switching majors invalidates the other version's build state, so the next build starts cold. Defaults to the sandbox default. |
 | `prepare` | Remote shell script after source sync and before xcodebuild. Failure stops the build. |
 | `snapshot-key` | Disk snapshot publication key and default restore key. |
@@ -188,49 +227,6 @@ the preview URL appears in the PR comment, action output, logs, and browser hist
 
 Set `tunnel` to the name of a [private tunnel](/docs/networking/private-tunnels)
 when the app needs services in your private network.
-
-### Keep app state between previews
-
-Use `simulator-snapshot-key` to keep installed apps, login sessions, app data, and
-permissions between iOS previews. Add it to your preview Action step:
-
-```yaml
-- uses: limrun-inc/ios-preview-action@main
-  with:
-    api-key: ${{ secrets.LIM_API_KEY }}
-    simulator-snapshot-key: myapp-{user}
-```
-
-The console replaces `{user}` with the reviewer's Limrun email address, giving
-each reviewer a separate snapshot. Use a stable key across pull requests so reviewers can reuse their simulator
-state on new builds.
-
-The console restores all saved apps and their state, then installs and launches
-the preview build. A newer build updates the app while keeping its data. Other
-apps stay installed with their saved state.
-
-The first preview starts fresh. After restoration completes, Limrun saves a
-snapshot when the simulator terminates. Each save replaces the previous snapshot
-under that key. A failed or interrupted restore leaves the previous snapshot
-untouched.
-
-Keys belong to your organization. To share one snapshot across reviewers,
-omit `{user}`, for example `simulator-snapshot-key: myapp-shared`. Everyone using
-that key restores the same state, including its login. Use a shared test account.
-The key appears in the preview URL, so do not put secrets in it.
-
-Reviewers have two controls in the preview:
-
-- **Save now** saves the current state immediately. Saving closes and reopens
-  running apps.
-- **Don't save state from this device** disables saving and restoring for future
-  previews in that browser. The current preview still saves when it terminates.
-
-`device-state-key` and the `deviceState` URL parameter remain supported as aliases.
-This snapshot is separate from the Xcode workspace snapshot set by `snapshot-key`.
-
-See [Simulator snapshots](/docs/reference/instances#simulator-snapshots) for what is saved,
-size limits, and version compatibility.
 
 ### Bazel projects
 

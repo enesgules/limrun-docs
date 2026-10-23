@@ -919,8 +919,8 @@ Without `--bundle-id`, file commands target the simulator staging folder. With `
 
 [Simulator snapshots](/docs/reference/instances#simulator-snapshots) save all
 installed apps, their data, keychain, and supported permissions under a name.
-For iOS previews, enable them with
-[`simulator-snapshot-key`](/docs/ci/pr-previews#keep-app-state-between-previews).
+For iOS previews, add
+[`snapshot-key`](/docs/ci/pr-previews#keep-app-state-between-previews) to the preview URL.
 
 To save only the keychain, run this command after signing in to your app:
 
