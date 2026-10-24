@@ -20,7 +20,7 @@ In a browser that supports [WebMCP](https://webmachinelearning.github.io/webmcp/
 
 ## Use Limrun itself
 
-- Authentication: API keys, described at `/auth.md`. A human must create the key at [console.limrun.com](https://console.limrun.com); set it as the `LIM_API_KEY` environment variable.
+- Authentication: API keys, described at `/auth.md`. A human approves every key: by creating it at [console.limrun.com](https://console.limrun.com) and setting it as the `LIM_API_KEY` environment variable, or by approving a `lim login` request that the agent starts.
 - The `lim` CLI is the agent-facing interface. Start at `/docs/agents/cli.md`.
 - Ready-made agent skills for Limrun workflows live in the public [limrun-inc/skills](https://github.com/limrun-inc/skills) repository, installable with `lim skills install`. A discovery index is at `/.well-known/agent-skills/index.json`.
 - The REST API and SDKs (TypeScript, Python, Go) are documented at `/docs/reference/sdk.md`.
