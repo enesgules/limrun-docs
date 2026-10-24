@@ -4,7 +4,40 @@ description: "Run iOS simulators, Android emulators, and Xcode and Gradle builds
 order: 1
 icon: "book-open"
 ---
-# What is Limrun
+# Build with Limrun
+
+## Set up your coding agent
+
+Paste this prompt into your coding agent. The agent reads the setup page as Markdown, installs the `lim` CLI and the Limrun skills, and asks you for an API key:
+
+```text title="Agent prompt"
+Set up Limrun for me. Fetch https://docs.limrun.com/docs/agents/cli.md and follow it.
+```
+
+Then ask the agent for a product change. It builds the app on a remote Mac, runs it on a cloud simulator, checks the screen, and sends you a link to review.
+
+<Columns cols={2}>
+  <Card title="Limrun plugin" icon="plug" href="https://github.com/limrun-inc/skills">
+    The skills and the remote MCP server in one install, for Claude Code, Codex, Cursor, and Gemini CLI.
+  </Card>
+  <Card title="Agent skills" icon="graduation-cap" href="/docs/agents/cli#install-the-limrun-skills">
+    Nine skills that teach the loop: build on a remote Mac, run on a cloud device, check the screen.
+  </Card>
+  <Card title="Remote MCP server" icon="bot" href="/docs/agents/remote-mcp">
+    Create, drive, stream, and delete devices from any MCP client. Sign in with OAuth.
+  </Card>
+  <Card title="lim CLI" icon="terminal" href="/docs/reference/cli">
+    Remote Xcode and Gradle builds, app uploads, and tunnels, with JSON output for agents.
+  </Card>
+  <Card title="Per-instance MCP server" icon="smartphone" href="/docs/agents/mcp">
+    Hand an agent one device, with a token that works only for that device.
+  </Card>
+  <Card title="Sandboxed agents" icon="lock-keyhole" href="/docs/agents/sandboxed-agents">
+    Give an agent in an untrusted sandbox one instance, and keep your API key outside.
+  </Card>
+</Columns>
+
+## What is Limrun
 
 Any process that can reach an HTTPS endpoint can build a mobile app on Limrun, run it, and drive it: a coding agent on a Linux VM, a CI runner without macOS minutes, or a backend that hands live devices to its own users.
 

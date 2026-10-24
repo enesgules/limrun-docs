@@ -6,9 +6,17 @@ icon: "terminal"
 ---
 # Set up a coding agent
 
-Install the `lim` CLI and the Limrun skills where your coding agent runs, then ask it for a product change. The skills teach the agent the whole loop: build on a remote Mac, run the app on a cloud simulator, check the screen, and hand you a link to review.
+Paste this prompt into your coding agent. The agent reads this page as Markdown and does the setup steps below by itself. It asks you for an API key when it needs one:
 
-## Install the CLI
+```text title="Agent prompt"
+Set up Limrun for me. Fetch https://docs.limrun.com/docs/agents/cli.md and follow it.
+```
+
+## Set it up by hand
+
+Install the `lim` CLI and the Limrun skills where your coding agent runs. The skills teach the agent the whole loop: build on a remote Mac, run the app on a cloud simulator, check the screen, and hand you a link to review.
+
+### Install the CLI
 
 The CLI needs Node.js 20 LTS or newer. Install it with your package manager:
 
@@ -18,7 +26,7 @@ pnpm add     --global lim
 bun  add     --global lim
 ```
 
-## Set your API key
+### Set your API key
 
 Create an API key at [console.limrun.com/settings](https://console.limrun.com/settings) under **API Keys**, then export it in the shell your agent uses:
 
@@ -32,7 +40,7 @@ The CLI also reads `LIM_API_KEY` from a `.env` file in the working directory.
 The API key can create, list, and delete every instance in your organization. If the agent runs in a sandbox that should not hold that much access, skip this step and give it a single instance instead. See [Sandboxed agents](/docs/agents/sandboxed-agents).
 </Warning>
 
-## Install the Limrun skills
+### Install the Limrun skills
 
 From your project root, install the skills:
 
