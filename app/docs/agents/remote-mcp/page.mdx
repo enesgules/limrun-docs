@@ -32,7 +32,7 @@ Add the server:
 claude mcp add --transport http limrun https://mcp.limrun.com/mcp
 ```
 
-Then open a Claude Code session, run `/mcp`, select **limrun**, and choose **Authenticate**. After you approve access in the browser, `/mcp` shows the server as connected with its 16 tools. Access tokens rotate automatically from then on, and you are not asked to sign in again unless you revoke access.
+Then open a Claude Code session, run `/mcp`, select **limrun**, and choose **Authenticate**. After you approve access in the browser, `/mcp` shows the server as connected. Access tokens rotate automatically from then on, and you are not asked to sign in again unless you revoke access.
 
 ## Connect from other MCP clients
 
@@ -45,7 +45,7 @@ The server is listed in the [official MCP registry](https://registry.modelcontex
 
 ## Tools
 
-The server exposes 16 tools in five groups.
+The server lists 19 tools: 16 for the model, in five groups, and 3 for the device panel.
 
 **Lifecycle and assets.** These take no `instanceId`; they operate on the organization.
 
@@ -68,7 +68,9 @@ Each device-control tool, like `stream-device`, takes the `instanceId` a create 
 
 **Skills.** `get-agent-skill` is covered in [Skills for builds and local files](#skills-for-builds-and-local-files).
 
-Apps install at creation time through the `apps` field. There is no install tool for a running instance: MCP gives the server no access to the client's filesystem, so anything that moves local bytes (an APK, a simulator build, an Xcode project) belongs to the CLI and SDKs. Upload builds to [Asset Storage](/docs/platform/asset-storage) first and they show up in `list-apps`. Instances created through this server carry a `created-by: mcp` label.
+**Device panel.** `open-devices`, `open-live-device`, and `install-app` are app-only tools: their `_meta.ui.visibility` is `["app"]`, so hosts that render [MCP Apps](https://github.com/modelcontextprotocol/ext-apps) keep them out of the model's tool list, and only the Limrun device panel calls them. `open-devices` opens the panel to choose or create a device, `open-live-device` opens a live device beside the conversation, and `install-app` installs an app asset on a running instance (on iOS it also launches the app). Opening the panel does not create a device.
+
+Apps install at creation time through the `apps` field. The model has no install tool for a running instance (`install-app` is app-only): MCP gives the server no access to the client's filesystem, so anything that moves local bytes (an APK, a simulator build, an Xcode project) belongs to the CLI and SDKs. Upload builds to [Asset Storage](/docs/platform/asset-storage) first and they show up in `list-apps`. Instances created through this server carry a `created-by: mcp` label.
 
 ## Skills for builds and local files
 

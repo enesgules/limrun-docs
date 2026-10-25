@@ -783,7 +783,7 @@ lim ios events --id <instance-id>
 lim ios app-logs --id <instance-id>
 ```
 
-Each events and app-logs entry is a timestamped JSONL file.
+A capture appears in these lists once it stops: when you stop the recording, or when the instance terminates. A running capture is not listed yet. With `--json`, each entry has a short-lived `downloadUrl`. Each events and app-logs entry is a timestamped JSONL file.
 
 ## Simulate the camera
 
